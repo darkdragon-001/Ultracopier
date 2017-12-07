@@ -1,3 +1,23 @@
+# setup release and debug
+# call via: qmake "CONFIG+=debug" ultracopier.pro to build debug build
+# call via: qmake "DESTDIR=../myspecialbuild" to output to another directory
+
+isEmpty(DESTDIR) {
+    release: DESTDIR = build/release
+    debug:   DESTDIR = build/debug
+}
+OBJECTS_DIR = $${DESTDIR}/.obj
+MOC_DIR     = $${DESTDIR}/.moc
+RCC_DIR     = $${DESTDIR}/.rcc
+UI_DIR      = $${DESTDIR}/.ui
+
+CONFIG(debug, debug|release) {
+    # possible options: ULTRACOPIER_DEBUG ULTRACOPIER_PLUGIN_DEBUG ULTRACOPIER_PLUGIN_DEBUG_WINDOW
+    DEFINES += ULTRACOPIER_DEBUG
+}
+
+# other setup
+
 DEFINES += ULTRACOPIER_PLUGIN_ALL_IN_ONE
 
 include(other-pro/ultracopier-core.pro)
