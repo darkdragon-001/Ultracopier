@@ -59,7 +59,7 @@ function _compile {
   find . -name "informations.xml" -exec sed -i -r "s;<architecture>.*</architecture>;<architecture>linux-x86_64-pc</architecture>;g" {} \;
 
   # version
-  export ULTRACOPIER_VERSION=$(grep "ULTRACOPIER_VERSION[^_]" Variable.h | sed 's/^#define\s\{1,\}ULTRACOPIER_VERSION\s\{1,\}"\([0-9]\{1,3\}\)\.\([0-9]\{1,3\}\)\.\([0-9]\{1,3\}\)\.\([0-9]\{1,3\}\)"/\1.\2.\3.\4/')
+  export ULTRACOPIER_VERSION=$(grep "ULTRACOPIER_VERSION[^_]" Variable.h | sed 's/^#define\s\{1,\}ULTRACOPIER_VERSION\s\{1,\}"\([0-9]\{1,3\}\)\.\([0-9]\{1,3\}\)\.\([0-9]\{1,3\}\)\.\([0-9]\{1,3\}\)".*$/\1.\2.\3.\4/')
   # release
   if [ $DEBUG -ne 1 ]; then
     # TODO allow plugin verions different from core version
