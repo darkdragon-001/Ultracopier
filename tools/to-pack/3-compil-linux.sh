@@ -132,7 +132,7 @@ function _compile {
       return $?
     }
     # add all plugin projects
-    # TODO parallel
+    # TODO parallel: subshell ()& + wait
     #SHOPT_OLD=$(shopt -p globstar)  # NOTE alternatively save and restore $SHELLOPTS $BASHOPTS
     #shopt -s globstar
     #for plugin in ./plugins/{,**/}*.pro; do
