@@ -81,16 +81,26 @@ function _compile {
   else
     # full build
     function build_project {
+      # parameters
       dst="${1}"
       pro="${2}"
       args=${3}
       flags=${4}
+      # prepare destination
       old_pwd=$(pwd)
       mkdir -p "${dst}"
       cd "${dst}"
+      # build
       qmake "${args}" "DESTDIR=\".\"" ${old_pwd}/${pro}
+      res=$?  # save return code
+      if [ $res != 0 ]; then
+        cd "${old_pwd}"
+        return $res
+      fi;
       make ${flags}
+      res=$?  # save return code
       cd "${old_pwd}"
+      return $res
     }
 
     # TODO fix error:
@@ -105,17 +115,21 @@ function _compile {
 
     ## plugins
     function build_plugin {
+      # variables
       args="${1}"
       target="${2}"
       plugin="${3}"
       plugin_path=$(dirname $plugin)
       plugin_file=$(basename $plugin)
-      if [[ $plugin_path == *'Windows'* ]]; then
+      # compatibility
+      if [[ $plugin_path == *'Windows'* ]]; then # TODO platform specific plugin list
         echo "Ignoring Windows plugin..."
         return
       fi
+      # build
       echo "Building plugin $plugin..."
       build_project "${TARGET}/${plugin_path}" "${plugin}" "${args}" "${MAKE_FLAGS}"
+      return $?
     }
     # add all plugin projects
     # TODO parallel
