@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Usage: 3-compile-linux.sh OUTPUT_PATH DEBUG ULTIMATE ILLEGAL
+# Example: 3-compile-linux.sh "./build" 0 1 1
 
 # TODO portable, bits, custom flags (qmake, make), static
 # TODO change Variables.h -> compile definitions (maintain plugin specific settings!)
@@ -11,6 +14,7 @@
 # TODO allow project directory different from "."
 function compile {
   # set options
+  # TODO check number of arguments, otherwise print help text
   TARGET=${1}
   DEBUG=${2}
   ULTIMATE=${3}
@@ -21,7 +25,7 @@ function compile {
   MAKE_FLAGS="-j8"
 
   # build arguments
-  args=""
+  args="DEFINES+=\"Q_OS_LINUX\""
   if [ -z $TARGET ]; then
     TARGET='.'
   fi
@@ -112,6 +116,7 @@ function _compile {
       build_project "${TARGET}/${plugin_path}" "${plugin}" "${args}" "${MAKE_FLAGS}"
     }
     # add all plugin projects
+    # TODO parallel
     #SHOPT_OLD=$(shopt -p globstar)  # NOTE alternatively save and restore $SHELLOPTS $BASHOPTS
     #shopt -s globstar
     #for plugin in ./plugins/{,**/}*.pro; do
@@ -145,27 +150,36 @@ function _compile {
     # TODO naming conventions for library file (*.so)
     # TODO automatic language detection
     ### executable
+    echo "... executable ..."
     cp "${TARGET}/core/ultracopier" "${PACKAGE_DIR}/ultracopier" ## executable already there because of DESTDIR=
+    ### resources
+    echo "... resources ..."
+    # NOTE files mentioned in the .qrc files are automatically embedded in the binary output files
+    cp "./resources/ultracopier.desktop" "${PACKAGE_DIR}/"
     ### languages
+    echo "... languages ..."
+    LANGUAGES="ar de el es fr hi hu id it ja ko nl no pl pt ru th tr zh" # default: en
     function package_languages {
       langs_src="${1}/Languages"
       langs_dst="${2}/Languages"
-      LANGUAGES="${3}" # TODO language auto detection
-      for lang in ${LANGUAGES}; do
+      langs="${3}" # TODO language auto detection
+      for lang in ${langs}; do
         mkdir -p "${langs_dst}/${lang}"
         cp "${langs_src}/${lang}/flag.png"         "${langs_dst}/${lang}"
         cp "${langs_src}/${lang}/informations.xml" "${langs_dst}/${lang}"
         cp "${langs_src}/${lang}/translation.qm"   "${langs_dst}/${lang}"
       done
     }
-    package_languages "./plugins" "${PACKAGE_DIR}" "fr"
+    #package_languages "./resources" "${PACKAGE_DIR}" "en" # NOTE packaged via resource file
+    package_languages "./plugins"   "${PACKAGE_DIR}" "${LANGUAGES}"
 
     ### Plugins
+    echo "... plugins ..."
     function package_plugin_languages {
       langs_src="${1}/Languages"
       langs_dst="${2}/Languages"
-      LANGUAGES="${3}" # TODO language auto detection
-      for lang in ${LANGUAGES}; do
+      langs="${3}" # TODO language auto detection
+      for lang in ${langs}; do
         mkdir -p "${langs_dst}/${lang}"
         cp "${langs_src}/${lang}/translation.qm" "${langs_dst}/${lang}"
       done
@@ -184,14 +198,17 @@ function _compile {
       cp "${PLUGIN_BUILD_SRC}/${PLUGIN_LIB_NAME}.so" "${PLUGIN_RELEASE_DST}"
       package_plugin_languages "${PLUGIN_SRC}" "${PLUGIN_RELEASE_DST}" "${LANGUAGES}" "${LANGUAGES}"
     }
-    package_plugin "CopyEngine"    "Ultracopier"     "libcopyEngine"   "fr"
-    package_plugin "CopyEngine"    "Rsync"           "libcopyEngine"   ""
-    package_plugin "Listener"      "catchcopy-v0002" "liblistener"     ""
-    #package_plugin "PluginLoader"  "catchcopy-v0002" "libpluginLoader" "fr" # NOTE Windows only
-    #package_plugin "SessionLoader" "KDE4"            "liblistener"     "libsessionLoader"
-    #package_plugin "SessionLoader" "Windows"         "liblistener"     "libsessionLoader" # NOTE Windows only
-    package_plugin "Themes"        "Oxygen"          "libinterface"    "fr"
-    package_plugin "Themes"        "Supercopier"     "libinterface"    ""
+    package_plugin "CopyEngine"    "Ultracopier"     "libcopyEngine"    "${LANGUAGES}"
+    package_plugin "CopyEngine"    "Rsync"           "libcopyEngine"    ""
+    cp -r "${PACKAGE_DIR}/CopyEngine/Ultracopier/Languages" "${PACKAGE_DIR}/CopyEngine/Rsync/Languages" # NOTE inline code switches are used # TODO separate them completly!
+    package_plugin "Listener"      "catchcopy-v0002" "liblistener"      ""
+    #package_plugin "PluginLoader"  "catchcopy-v0002" "libpluginLoader"  "${LANGUAGES}" # NOTE Windows only
+    #package_plugin "SessionLoader" "KDE4"            "libsessionLoader" ""
+    #package_plugin "SessionLoader" "Windows"         "libsessionLoader" "" # NOTE Windows only
+    package_plugin "Themes"        "Oxygen"          "libinterface"     "${LANGUAGES}"
+    package_plugin "Themes"        "Supercopier"     "libinterface"     ""
+
+    echo "... done!"
   fi
 }
 compile "$@"
