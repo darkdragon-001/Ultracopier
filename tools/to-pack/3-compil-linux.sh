@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 #
+# NOTE Currently this script *must* be run from the project root folder!
+#
 # Usage: 3-compile-linux.sh OUTPUT_PATH DEBUG ULTIMATE ILLEGAL
 # Example: 3-compile-linux.sh "./build" 0 1 1
 
