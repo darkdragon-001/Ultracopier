@@ -2,8 +2,8 @@
 #
 # NOTE Currently this script *must* be run from the project root folder!
 #
-# Usage: 3-compile-linux.sh OUTPUT_PATH DEBUG ULTIMATE ILLEGAL
-# Example: 3-compile-linux.sh "./build" 0 1 1
+# Usage: 3-compile-linux.sh BUILD_PATH DEBUG ULTIMATE ILLEGAL
+# Example: 3-compile-linux.sh "./build" "./package" 0 1 1
 
 # TODO portable, bits, custom flags (qmake, make), static
 # TODO change Variables.h -> compile definitions (maintain plugin specific settings!)
@@ -17,19 +17,20 @@
 function compile {
   # set options
   # TODO check number of arguments, otherwise print help text
-  TARGET=${1}
-  DEBUG=${2}
-  ULTIMATE=${3}
-  ILLEGAL=${4}
+  BUILD_DIR=${1}
+  PACKAGE_DIR=${2}
+  DEBUG=${3}
+  ULTIMATE=${4}
+  ILLEGAL=${5}
   LOGPATH="/tmp"
   LOGFILE="${LOGPATH}/stdout.log"
   LOGERROR="${LOGPATH}/stderr.log"
   MAKE_FLAGS="-j8"
 
   # build arguments
-  args="DEFINES+=\"Q_OS_LINUX\""
-  if [ -z $TARGET ]; then
-    TARGET='.'
+  args=" DEFINES+=\"Q_OS_LINUX\""
+  if [ -z $BUILD_DIR ]; then
+    BUILD_DIR='.'
   fi
   if [ $DEBUG -eq 1 ]; then
     args+=" CONFIG+=debug"
@@ -49,12 +50,12 @@ function compile {
   # TODO color preservation when using tee: https://superuser.com/a/751809/260055
   # -> how to use it when calling a function?
   # if command -v unbuffer; then  # check if unbuffer command available
-  #_compile "${TARGET}" "${args}" "${MAKE_FLAGS}" > >(tee -a ${LOGFILE}) 2> >(tee -a ${LOGERROR} >&2)
-  _compile "${TARGET}" "${args}" "${MAKE_FLAGS}" > ${LOGFILE}
+  #_compile "${BUILD_DIR}" "${args}" "${MAKE_FLAGS}" > >(tee -a ${LOGFILE}) 2> >(tee -a ${LOGERROR} >&2)
+  _compile "${BUILD_DIR}" "${args}" "${MAKE_FLAGS}" > ${LOGFILE}
 }
 function _compile {
   # parameters
-  TARGET=${1}
+  BUILD_DIR=${1}
   args=${2}  # QMake flags
   MAKE_FLAGS=${3}
 
@@ -76,7 +77,7 @@ function _compile {
   # build
   if [ $DEBUG -eq 1 ]; then
     # all in one
-    qmake "${args}" "DESTDIR=\"$TARGET\"" ./ultracopier.pro
+    qmake ${args} "DESTDIR=\"$BUILD_DIR\"" ./ultracopier.pro
     make $MAKE_FLAGS
   else
     # full build
@@ -91,7 +92,7 @@ function _compile {
       mkdir -p "${dst}"
       cd "${dst}"
       # build
-      qmake "${args}" "DESTDIR=\".\"" ${old_pwd}/${pro}
+      eval qmake "${args}" "DESTDIR=\".\"" ${old_pwd}/${pro}  # NOTE eval needed to unpack $args
       res=$?  # save return code
       if [ $res != 0 ]; then
         cd "${old_pwd}"
@@ -111,7 +112,7 @@ function _compile {
 
     ## core
     echo "Building core..."
-    build_project "${TARGET}/core" ./other-pro/ultracopier-core.pro "${args}" "${MAKE_FLAGS}"
+    build_project "${BUILD_DIR}/core" ./other-pro/ultracopier-core.pro "${args}" "${MAKE_FLAGS}"
 
     ## plugins
     function build_plugin {
@@ -128,7 +129,7 @@ function _compile {
       fi
       # build
       echo "Building plugin $plugin..."
-      build_project "${TARGET}/${plugin_path}" "${plugin}" "${args}" "${MAKE_FLAGS}"
+      build_project "${BUILD_DIR}/${plugin_path}" "${plugin}" "${args}" "${MAKE_FLAGS}"
       return $?
     }
     # add all plugin projects
@@ -140,34 +141,33 @@ function _compile {
     #  if [ "$(basename $plugin)" == '*.pro' ]; then
     #    continue
     #  fi
-    #  build_plugin "${args}" "${TARGET}" ${plugin}
+    #  build_plugin "${args}" "${BUILD_DIR}" ${plugin}
     #done
     #eval $SHOPT_OLD
     # selectively add projects
-    build_plugin "${args}" "${TARGET}" "./plugins/CopyEngine/Ultracopier/CopyEngine.pro" #ALL-IN-ONE
-    build_plugin "${args}" "${TARGET}" "./plugins/CopyEngine/Rsync/Rsync.pro"
-    build_plugin "${args}" "${TARGET}" "./plugins/Listener/catchcopy-v0002/listener.pro" #ALL-IN-ONE
-    build_plugin "${args}" "${TARGET}" "./plugins/PluginLoader/catchcopy-v0002/pluginLoader.pro"
-    build_plugin "${args}" "${TARGET}" "./plugins/SessionLoader/Windows/sessionLoader.pro"
-    build_plugin "${args}" "${TARGET}" "./plugins/Themes/Oxygen/interface.pro" #ALL-IN-ONE
-    build_plugin "${args}" "${TARGET}" "./plugins/Themes/Supercopier/interface.pro"
-    #build_plugin "${args}" "${TARGET}" "./plugins-alternative/Listener/dbus/listener.pro"
-    #build_plugin "${args}" "${TARGET}" "./plugins-alternative/PluginLoader/keybinding/pluginLoader.pro"
-    #build_plugin "${args}" "${TARGET}" "./plugins-alternative/SessionLoader/KDE4/sessionLoader.pro"
-    #build_plugin "${args}" "${TARGET}" "./plugins-alternative/Themes/Clean/interface.pro"
-    #build_plugin "${args}" "${TARGET}" "./plugins-alternative/Themes/Teracopy/interface.pro"
-    #build_plugin "${args}" "${TARGET}" "./plugins-alternative/Themes/Windows/interface.pro"
+    build_plugin "${args}" "${BUILD_DIR}" "./plugins/CopyEngine/Ultracopier/CopyEngine.pro" #ALL-IN-ONE
+    build_plugin "${args}" "${BUILD_DIR}" "./plugins/CopyEngine/Rsync/Rsync.pro"
+    build_plugin "${args}" "${BUILD_DIR}" "./plugins/Listener/catchcopy-v0002/listener.pro" #ALL-IN-ONE
+    build_plugin "${args}" "${BUILD_DIR}" "./plugins/PluginLoader/catchcopy-v0002/pluginLoader.pro"
+    build_plugin "${args}" "${BUILD_DIR}" "./plugins/SessionLoader/Windows/sessionLoader.pro"
+    build_plugin "${args}" "${BUILD_DIR}" "./plugins/Themes/Oxygen/interface.pro" #ALL-IN-ONE
+    build_plugin "${args}" "${BUILD_DIR}" "./plugins/Themes/Supercopier/interface.pro"
+    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-alternative/Listener/dbus/listener.pro"
+    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-alternative/PluginLoader/keybinding/pluginLoader.pro"
+    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-alternative/SessionLoader/KDE4/sessionLoader.pro"
+    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-alternative/Themes/Clean/interface.pro"
+    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-alternative/Themes/Teracopy/interface.pro"
+    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-alternative/Themes/Windows/interface.pro"
 
     ## package (to build)
     # TODO only when everything before successful!
     echo "Packaging..."
-    PACKAGE_DIR="${TARGET}/package"
     mkdir -p "${PACKAGE_DIR}"
     # TODO naming conventions for library file (*.so)
     # TODO automatic language detection
     ### executable
     echo "... executable ..."
-    cp "${TARGET}/core/ultracopier" "${PACKAGE_DIR}/ultracopier" ## executable already there because of DESTDIR=
+    cp "${BUILD_DIR}/core/ultracopier" "${PACKAGE_DIR}/ultracopier" ## executable already there because of DESTDIR=
     ### resources
     echo "... resources ..."
     # NOTE files mentioned in the .qrc files are automatically embedded in the binary output files
@@ -205,7 +205,7 @@ function _compile {
       PLUGIN_NAME="${2}"
       PLUGIN_PATH="${PLUGIN_TYPE}/${PLUGIN_NAME}"
       PLUGIN_SRC="./plugins/${PLUGIN_PATH}" # TODO allow plugins_alternative
-      PLUGIN_BUILD_SRC="${TARGET}/plugins/${PLUGIN_PATH}"
+      PLUGIN_BUILD_SRC="${BUILD_DIR}/plugins/${PLUGIN_PATH}"
       PLUGIN_RELEASE_DST="${PACKAGE_DIR}/${PLUGIN_PATH}"
       PLUGIN_LIB_NAME="${3}" # TODO naming convention --> based on PLUGIN_TYPE
       LANGUAGES="${4}" # TODO language auto detection

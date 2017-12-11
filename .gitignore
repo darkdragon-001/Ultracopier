@@ -61,3 +61,4 @@ CMakeLists.txt.user*
 
 # Project console build folder
 build/
+package/
