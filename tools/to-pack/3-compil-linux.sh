@@ -2,8 +2,8 @@
 #
 # NOTE Currently this script *must* be run from the project root folder!
 #
-# Usage: 3-compile-linux.sh BUILD_PATH DEBUG ULTIMATE ILLEGAL
-# Example: 3-compile-linux.sh "./build" "./package" 0 1 1
+# Usage: 3-compile-linux.sh BUILD_PATH DEBUG ULTIMATE
+# Example: 3-compile-linux.sh "./build" "./package" 0 1
 
 # TODO portable, bits, custom flags (qmake, make), static
 # TODO change Variables.h -> compile definitions (maintain plugin specific settings!)
@@ -21,7 +21,6 @@ function compile {
   PACKAGE_DIR=${2}
   DEBUG=${3}
   ULTIMATE=${4}
-  ILLEGAL=${5}
   LOGPATH="/tmp"
   LOGFILE="${LOGPATH}/stdout.log"
   LOGERROR="${LOGPATH}/stderr.log"
@@ -39,9 +38,6 @@ function compile {
   fi
   if [ $ULTIMATE -eq 1 ]; then
     args+=" DEFINES+=\"ULTRACOPIER_VERSION_ULTIMATE\""
-  fi
-  if [ $ILLEGAL -eq 1 ]; then
-    args+=" DEFINES+=\"ULTRACOPIER_ILLEGAL\""
   fi
 
   # do the work
