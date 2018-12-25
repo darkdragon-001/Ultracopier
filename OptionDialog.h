@@ -79,10 +79,9 @@ private slots:
     void on_DisplayOSWarning_clicked();
     void on_checkTheUpdate_clicked();
     void on_confirmToGroupWindows_clicked();
-    void on_giveGPUTime_clicked();
     void oSSpecificClosed();
     void on_remainingTimeAlgorithm_currentIndexChanged(int index);
-
+    void on_portable_toggled(bool);
 private:
     bool quit;
     Ui::OptionDialog *ui;
@@ -109,7 +108,6 @@ private:
     std::vector<std::string> copyEngineStringList() const;
     bool ignoreCopyEngineListEdition;
     PluginsManager::ImportBackend defaultImportBackend;
-    int index,loop_size;
     int loadedCopyEnginePlugin;
     QTreeWidgetItem * treeWidgetItem;
     OSSpecific *oSSpecific;

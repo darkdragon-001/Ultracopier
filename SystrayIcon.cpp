@@ -12,6 +12,7 @@
 #include "ThemesManager.h"
 #include "LanguagesManager.h"
 #include "HelpDialog.h"
+#include "ProductKey.h"
 
 #ifdef Q_OS_MAC
 //extern void qt_mac_set_dock_menu(QMenu *menu);
@@ -33,6 +34,7 @@ SystrayIcon::SystrayIcon(QObject * parent) :
     #endif
     actionMenuQuit		= new QAction(this);
     actionOptions		= new QAction(this);
+    actionProductKey    = new QAction(this);
     //actionTransfer		= new QAction(this);
     #if ! defined(Q_OS_LINUX) || (QT_VERSION < QT_VERSION_CHECK(5, 6, 0))
     copyMenu		= NULL;
@@ -42,7 +44,11 @@ SystrayIcon::SystrayIcon(QObject * parent) :
     statePluginLoader=Ultracopier::Uncaught;
 
     setContextMenu(systrayMenu);
-    setToolTip(QStringLiteral("Ultracopier"));
+    #ifdef ULTRACOPIER_MODE_SUPERCOPIER
+     setToolTip(QStringLiteral("Supercopier"));
+     #else
+      setToolTip(QStringLiteral("Ultracopier"));
+     #endif
     #ifdef Q_OS_WIN32
     setIcon(QIcon(QStringLiteral(":/systray_Uncaught_Windows.png")));
     #else
@@ -57,6 +63,7 @@ SystrayIcon::SystrayIcon(QObject * parent) :
     connect(actionMenuQuit,		&QAction::triggered,					this,	&SystrayIcon::quit);
     connect(actionMenuAbout,	&QAction::triggered,					this,	&SystrayIcon::showHelp);
     connect(actionOptions,		&QAction::triggered,					this,	&SystrayIcon::showOptions);
+    connect(actionProductKey,	&QAction::triggered,					this,	&SystrayIcon::showProductKey);
     connect(this,			&SystrayIcon::activated,                    this,	&SystrayIcon::CatchAction);
     #ifdef ULTRACOPIER_INTERNET_SUPPORT
     connect(this,			&QSystemTrayIcon::messageClicked,           this,	&SystrayIcon::messageClicked);
@@ -73,6 +80,8 @@ SystrayIcon::SystrayIcon(QObject * parent) :
     #ifdef ULTRACOPIER_DEBUG
     systrayMenu->addAction(actionSaveBugReport);
     #endif
+    if(!ProductKey::productKey->isUltimate())
+        systrayMenu->addAction(actionProductKey);
     systrayMenu->addAction(actionMenuQuit);
     #ifndef Q_OS_MAC
     systrayMenu->insertSeparator(actionOptions);
@@ -107,6 +116,7 @@ SystrayIcon::~SystrayIcon()
     #endif
     delete actionMenuAbout;
     delete actionOptions;
+    delete actionProductKey;
     delete systrayMenu;
     #if ! defined(Q_OS_LINUX) || (QT_VERSION < QT_VERSION_CHECK(5, 6, 0))
     if(copyMenu!=NULL)
@@ -121,7 +131,11 @@ void SystrayIcon::checkSetTooltip()
 {
     if(isSystemTrayAvailable())
     {
+        #ifdef ULTRACOPIER_MODE_SUPERCOPIER
+        setToolTip(QStringLiteral("Supercopier"));
+        #else
         setToolTip(QStringLiteral("Ultracopier"));
+        #endif
         updateSystrayIcon();
     }
     else
@@ -164,7 +178,8 @@ void SystrayIcon::showSystrayMessage(const std::string& text)
 #ifdef ULTRACOPIER_INTERNET_SUPPORT
 void SystrayIcon::messageClicked()
 {
-    QDesktopServices::openUrl(QString::fromStdString(HelpDialog::getUpdateUrl()));
+    if(!QDesktopServices::openUrl(QString::fromStdString(HelpDialog::getUpdateUrl())))
+        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Critical,"start, haveListenerInfo "+std::to_string((int)haveListenerInfo)+", havePluginLoaderInfo: "+std::to_string((int)havePluginLoaderInfo));
 }
 #endif
 
@@ -254,7 +269,11 @@ void SystrayIcon::updateSystrayIcon()
     if(theNewSystrayIcon.isNull())
         ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Critical,"All the icon include the default icon remain null");
     setIcon(theNewSystrayIcon);
+    #ifdef ULTRACOPIER_MODE_SUPERCOPIER
+    setToolTip(QString::fromStdString("Supercopier - "+toolTip));
+    #else
     setToolTip(QString::fromStdString("Ultracopier - "+toolTip));
+    #endif
 }
 
 /* drag event processing (impossible with Qt on systray)
@@ -276,7 +295,7 @@ void SystrayIcon::dropEvent(QDropEvent *event)
         unsigned int index=0;
         while(index<(unsigned int)mimeData->urls().size())
         {
-            urls.push_back(mimeData->urls().at(index).toString().toStdString());
+            urls.push_back(mimeData->urls().at(static_cast<int>(index)).toString().toStdString());
             index++;
         }
         emit urlDropped(urls);
@@ -333,6 +352,8 @@ void SystrayIcon::updateCurrentTheme()
     else
         IconOptions=QIcon("");
     actionOptions->setIcon(IconOptions);
+
+    actionProductKey->setIcon(IconInfo);
 
     tempIcon=ThemesManager::themesManager->loadIcon("SystemTrayIcon/add.png");
     if(!tempIcon.isNull())
@@ -426,6 +447,7 @@ void SystrayIcon::retranslateTheUI()
     #endif
     actionMenuQuit		->setText(tr("&Quit"));
     actionOptions		->setText(tr("&Options"));
+    actionProductKey		->setText(tr("&Product key"));
     reloadEngineList();
     updateSystrayIcon();
 }
@@ -463,7 +485,7 @@ void SystrayIcon::newUpdate(const std::string &version)
     /*if(version==lastVersion)
         return;*/
     lastVersion=version;
-    showSystrayMessage((tr("New version: %1").arg(QString::fromStdString(version))+"\n"+tr("Click here to go on download page")).toStdString());
+    showSystrayMessage((tr("New version: %1").arg(QString::fromStdString(version))+"\n"+tr("Go to the download page:")).toStdString()+"\n"+HelpDialog::getUpdateUrl());
 }
 #endif
 
@@ -522,9 +544,9 @@ void SystrayIcon::reloadEngineList()
         QMenu *menu = nullptr;
         #if ! defined(Q_OS_LINUX) || (QT_VERSION < QT_VERSION_CHECK(5, 6, 0))
         if(engineEntryList.size()==1)
-            *menu = copyMenu;
+            menu = copyMenu;
         else
-            *menu = new QMenu(name);
+            menu = new QMenu(name);
         #else
         if(engineEntryList.size()!=1) {
             labelCopy     += " ("+name+")";
@@ -544,4 +566,9 @@ void SystrayIcon::reloadEngineList()
         #endif
     }
     setContextMenu(systrayMenu);
+}
+
+void SystrayIcon::changeToUltimate()
+{
+    systrayMenu->removeAction(actionProductKey);
 }

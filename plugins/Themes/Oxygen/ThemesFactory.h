@@ -3,8 +3,8 @@
 \author alpha_one_x86
 \licence GPL3, see the file COPYING */
 
-#ifndef FACTORY_H
-#define FACTORY_H
+#ifndef FACTORYTHEMEOXYGEN_H
+#define FACTORYTHEMEOXYGEN_H
 
 #include <QObject>
 #include <QWidget>
@@ -69,6 +69,8 @@ private slots:
     void updateProgressionColorBar();
     void setShowProgressionInTheTitle();
     void startMinimized(bool checked);
+    void savePositionBeforeClose(QObject *obj);
+    void savePositionHaveChanged(bool checked);
 public slots:
     void resetOptions();
     void newLanguageLoaded();

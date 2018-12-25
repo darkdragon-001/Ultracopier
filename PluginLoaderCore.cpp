@@ -3,22 +3,28 @@
 \author alpha_one_x86
 \licence GPL3, see the file COPYING */
 
-#include "PluginLoader.h"
+#include "PluginLoaderCore.h"
 #include "LanguagesManager.h"
 
-PluginLoader::PluginLoader(OptionDialog *optionDialog)
+#ifdef ULTRACOPIER_PLUGIN_ALL_IN_ONE
+#ifdef Q_OS_WIN32
+#include "plugins/PluginLoader/catchcopy-v0002/pluginLoader.h"
+#endif
+#endif
+
+PluginLoaderCore::PluginLoaderCore(OptionDialog *optionDialog)
 {
     ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"start");
     this->optionDialog=optionDialog;
     //load the overall instance
     //load the plugin
     PluginsManager::pluginsManager->lockPluginListEdition();
-    connect(this,&PluginLoader::previouslyPluginAdded,	this,&PluginLoader::onePluginAdded,Qt::QueuedConnection);
-    connect(PluginsManager::pluginsManager,&PluginsManager::onePluginAdded,	this,&PluginLoader::onePluginAdded,Qt::QueuedConnection);
+    connect(this,&PluginLoaderCore::previouslyPluginAdded,	this,&PluginLoaderCore::onePluginAdded,Qt::QueuedConnection);
+    connect(PluginsManager::pluginsManager,&PluginsManager::onePluginAdded,	this,&PluginLoaderCore::onePluginAdded,Qt::QueuedConnection);
     #ifndef ULTRACOPIER_PLUGIN_ALL_IN_ONE
-    connect(PluginsManager::pluginsManager,&PluginsManager::onePluginWillBeRemoved,this,&PluginLoader::onePluginWillBeRemoved,Qt::DirectConnection);
+    connect(PluginsManager::pluginsManager,&PluginsManager::onePluginWillBeRemoved,this,&PluginLoaderCore::onePluginWillBeRemoved,Qt::DirectConnection);
     #endif
-    connect(PluginsManager::pluginsManager,&PluginsManager::pluginListingIsfinish,	this,&PluginLoader::allPluginIsloaded,Qt::QueuedConnection);
+    connect(PluginsManager::pluginsManager,&PluginsManager::pluginListingIsfinish,	this,&PluginLoaderCore::allPluginIsloaded,Qt::QueuedConnection);
     std::vector<PluginsAvailable> list=PluginsManager::pluginsManager->getPluginsByCategory(PluginType_PluginLoader);
     foreach(PluginsAvailable currentPlugin,list)
         emit previouslyPluginAdded(currentPlugin);
@@ -30,7 +36,7 @@ PluginLoader::PluginLoader(OptionDialog *optionDialog)
     stopIt=false;
 }
 
-PluginLoader::~PluginLoader()
+PluginLoaderCore::~PluginLoaderCore()
 {
     stopIt=true;
     #ifndef ULTRACOPIER_PLUGIN_ALL_IN_ONE_DIRECT
@@ -57,15 +63,20 @@ PluginLoader::~PluginLoader()
     #endif
 }
 
-void PluginLoader::resendState()
+void PluginLoaderCore::resendState()
 {
     if(stopIt)
         return;
     sendState(true);
 }
 
-void PluginLoader::onePluginAdded(const PluginsAvailable &plugin)
+void PluginLoaderCore::onePluginAdded(const PluginsAvailable &plugin)
 {
+    #ifdef ULTRACOPIER_PLUGIN_ALL_IN_ONE
+    #ifdef Q_OS_WIN32
+    PluginInterface_PluginLoader *factory;
+    #endif
+    #endif
     #ifndef ULTRACOPIER_PLUGIN_ALL_IN_ONE_DIRECT
     if(stopIt)
         return;
@@ -109,9 +120,8 @@ void PluginLoader::onePluginAdded(const PluginsAvailable &plugin)
     }
     newEntry.pluginLoader			= pluginLoader;
     //check if found
-    int index=0;
-    const int &loop_size=pluginList.size();
-    while(index<loop_size)
+    unsigned int index=0;
+    while(index<pluginList.size())
     {
         if(pluginList.at(index).pluginLoaderInterface==pluginLoaderInstance)
         {
@@ -123,7 +133,7 @@ void PluginLoader::onePluginAdded(const PluginsAvailable &plugin)
     }
     #endif
     #ifdef ULTRACOPIER_DEBUG
-    connect(pluginLoaderInstance,&PluginInterface_PluginLoader::debugInformation,this,&PluginLoader::debugInformation,Qt::DirectConnection);
+    connect(pluginLoaderInstance,&PluginInterface_PluginLoader::debugInformation,this,&PluginLoaderCore::debugInformation,Qt::DirectConnection);
     #endif // ULTRACOPIER_DEBUG
 
     newEntry.options=new LocalPluginOptions("PluginLoader-"+plugin.name);
@@ -134,7 +144,7 @@ void PluginLoader::onePluginAdded(const PluginsAvailable &plugin)
     pluginList.push_back(newEntry);
     pluginLoaderInstance->setResources(newEntry.options,plugin.writablePath,plugin.path,ULTRACOPIER_VERSION_PORTABLE_BOOL);
     optionDialog->addPluginOptionWidget(PluginType_PluginLoader,plugin.name,newEntry.pluginLoaderInterface->options());
-    connect(pluginList.back().pluginLoaderInterface,&PluginInterface_PluginLoader::newState,this,&PluginLoader::newState,Qt::DirectConnection);
+    connect(pluginList.back().pluginLoaderInterface,&PluginInterface_PluginLoader::newState,this,&PluginLoaderCore::newState,Qt::DirectConnection);
     connect(LanguagesManager::languagesManager,&LanguagesManager::newLanguageLoaded,newEntry.pluginLoaderInterface,&PluginInterface_PluginLoader::newLanguageLoaded,Qt::DirectConnection);
     if(needEnable)
     {
@@ -142,21 +152,48 @@ void PluginLoader::onePluginAdded(const PluginsAvailable &plugin)
         newEntry.pluginLoaderInterface->setEnabled(needEnable);
     }
     #else
+    #ifdef Q_OS_WIN32
+    factory=new WindowsExplorerLoader();
+    LocalPlugin newEntry;
+    #ifndef ULTRACOPIER_PLUGIN_ALL_IN_ONE_DIRECT
+    newEntry.pluginLoader=NULL;
+    #endif
+
+    newEntry.options=new LocalPluginOptions("PluginLoader-"+plugin.name);
+    newEntry.pluginLoaderInterface		= new WindowsExplorerLoader();
+    newEntry.path				= plugin.path;
+    newEntry.state				= Ultracopier::Uncaught;
+    newEntry.inWaitOfReply			= false;
+    #ifndef ULTRACOPIER_PLUGIN_ALL_IN_ONE_DIRECT
+    #ifdef ULTRACOPIER_DEBUG
+    connect(newEntry.pluginLoaderInterface,&PluginInterface_PluginLoader::debugInformation,this,&PluginLoaderCore::debugInformation,Qt::DirectConnection);
+    #endif // ULTRACOPIER_DEBUG
+    #endif
+    pluginList.push_back(newEntry);
+    newEntry.pluginLoaderInterface->setResources(newEntry.options,plugin.writablePath,plugin.path,ULTRACOPIER_VERSION_PORTABLE_BOOL);
+    optionDialog->addPluginOptionWidget(PluginType_PluginLoader,plugin.name,newEntry.pluginLoaderInterface->options());
+    connect(pluginList.back().pluginLoaderInterface,&PluginInterface_PluginLoader::newState,this,&PluginLoaderCore::newState,Qt::DirectConnection);
+    connect(LanguagesManager::languagesManager,&LanguagesManager::newLanguageLoaded,newEntry.pluginLoaderInterface,&PluginInterface_PluginLoader::newLanguageLoaded,Qt::DirectConnection);
+    if(needEnable)
+    {
+        pluginList.back().inWaitOfReply=true;
+        newEntry.pluginLoaderInterface->setEnabled(needEnable);
+    }
+    #endif
     Q_UNUSED(plugin);
     #endif
 }
 
 #ifndef ULTRACOPIER_PLUGIN_ALL_IN_ONE
-void PluginLoader::onePluginWillBeRemoved(const PluginsAvailable &plugin)
+void PluginLoaderCore::onePluginWillBeRemoved(const PluginsAvailable &plugin)
 {
     if(stopIt)
         return;
     if(plugin.category!=PluginType_PluginLoader)
         return;
     ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"start");
-    int index=0;
-    const int &loop_size=pluginList.size();
-    while(index<loop_size)
+    unsigned int index=0;
+    while(index<pluginList.size())
     {
         if(plugin.path==pluginList.at(index).path)
         {
@@ -177,7 +214,7 @@ void PluginLoader::onePluginWillBeRemoved(const PluginsAvailable &plugin)
 }
 #endif
 
-void PluginLoader::load()
+void PluginLoaderCore::load()
 {
     if(stopIt)
         return;
@@ -193,7 +230,7 @@ void PluginLoader::load()
     sendState(true);
 }
 
-void PluginLoader::unload()
+void PluginLoaderCore::unload()
 {
     if(stopIt)
         return;
@@ -210,13 +247,13 @@ void PluginLoader::unload()
 }
 
 #ifdef ULTRACOPIER_DEBUG
-void PluginLoader::debugInformation(const Ultracopier::DebugLevel &level,const std::string& fonction,const std::string& text,const std::string& file,const unsigned int& ligne)
+void PluginLoaderCore::debugInformation(const Ultracopier::DebugLevel &level,const std::string& fonction,const std::string& text,const std::string& file,const unsigned int& ligne)
 {
     DebugEngine::addDebugInformationStatic(level,fonction,text,file,ligne,"Plugin loader plugin");
 }
 #endif // ULTRACOPIER_DEBUG
 
-void PluginLoader::allPluginIsloaded()
+void PluginLoaderCore::allPluginIsloaded()
 {
     if(stopIt)
         return;
@@ -224,7 +261,7 @@ void PluginLoader::allPluginIsloaded()
     sendState(true);
 }
 
-void PluginLoader::sendState(bool force)
+void PluginLoaderCore::sendState(bool force)
 {
     if(stopIt)
         return;
@@ -275,7 +312,7 @@ void PluginLoader::sendState(bool force)
     last_inWaitOfReply=found_inWaitOfReply;
 }
 
-void PluginLoader::newState(const Ultracopier::CatchState &state)
+void PluginLoaderCore::newState(const Ultracopier::CatchState &state)
 {
     if(stopIt)
         return;

@@ -5,6 +5,7 @@
 \licence GPL3, see the file COPYING */
 
 #include "FacilityEngine.h"
+#include "ProductKey.h"
 
 #if defined (Q_OS_WIN32)
     #ifndef NOMINMAX
@@ -98,32 +99,32 @@ std::string FacilityEngine::sizeToString(const double &size) const
 {
     double size_temp=size;
     if(size_temp<1024)
-        return std::to_string(size_temp)+sizeUnitToString(Ultracopier::SizeUnit_byte);
+        return std::to_string((unsigned int)size_temp)+sizeUnitToString(Ultracopier::SizeUnit_byte);
     if((size_temp=size_temp/1024)<1024)
-        return adaptString(size_temp)+sizeUnitToString(Ultracopier::SizeUnit_KiloByte);
+        return adaptString(static_cast<float>(size_temp))+sizeUnitToString(Ultracopier::SizeUnit_KiloByte);
     if((size_temp=size_temp/1024)<1024)
-        return adaptString(size_temp)+sizeUnitToString(Ultracopier::SizeUnit_MegaByte);
+        return adaptString(static_cast<float>(size_temp))+sizeUnitToString(Ultracopier::SizeUnit_MegaByte);
     if((size_temp=size_temp/1024)<1024)
-        return adaptString(size_temp)+sizeUnitToString(Ultracopier::SizeUnit_GigaByte);
+        return adaptString(static_cast<float>(size_temp))+sizeUnitToString(Ultracopier::SizeUnit_GigaByte);
     if((size_temp=size_temp/1024)<1024)
-        return adaptString(size_temp)+sizeUnitToString(Ultracopier::SizeUnit_TeraByte);
+        return adaptString(static_cast<float>(size_temp))+sizeUnitToString(Ultracopier::SizeUnit_TeraByte);
     if((size_temp=size_temp/1024)<1024)
-        return adaptString(size_temp)+sizeUnitToString(Ultracopier::SizeUnit_PetaByte);
+        return adaptString(static_cast<float>(size_temp))+sizeUnitToString(Ultracopier::SizeUnit_PetaByte);
     if((size_temp=size_temp/1024)<1024)
-        return adaptString(size_temp)+sizeUnitToString(Ultracopier::SizeUnit_ExaByte);
+        return adaptString(static_cast<float>(size_temp))+sizeUnitToString(Ultracopier::SizeUnit_ExaByte);
     if((size_temp=size_temp/1024)<1024)
-        return adaptString(size_temp)+sizeUnitToString(Ultracopier::SizeUnit_ZettaByte);
+        return adaptString(static_cast<float>(size_temp))+sizeUnitToString(Ultracopier::SizeUnit_ZettaByte);
     if((size_temp=size_temp/1024)<1024)
-        return adaptString(size_temp)+sizeUnitToString(Ultracopier::SizeUnit_YottaByte);
+        return adaptString(static_cast<float>(size_temp))+sizeUnitToString(Ultracopier::SizeUnit_YottaByte);
     return Translation_tooBig;
 }
 
 std::string FacilityEngine::adaptString(const float &size) const
 {
     if(size>=100)
-        return QString::number(size,'f',0).toStdString();
+        return QString::number(static_cast<double>(size),'f',0).toStdString();
     else
-        return QString::number(size,'g',3).toStdString();
+        return QString::number(static_cast<double>(size),'g',3).toStdString();
 }
 
 
@@ -178,13 +179,13 @@ Ultracopier::TimeDecomposition FacilityEngine::secondsToTimeDecomposition(const 
 {
     quint32 seconds_temp=seconds;
     Ultracopier::TimeDecomposition returnValue;
-    returnValue.second=seconds_temp%60;
+    returnValue.second=static_cast<uint16_t>(seconds_temp%60);
     seconds_temp-=returnValue.second;
     seconds_temp/=60;
-    returnValue.minute=seconds_temp%60;
+    returnValue.minute=static_cast<uint16_t>(seconds_temp%60);
     seconds_temp-=returnValue.minute;
     seconds_temp/=60;
-    returnValue.hour=seconds_temp;
+    returnValue.hour=static_cast<uint16_t>(seconds_temp);
     return returnValue;
 }
 
@@ -229,19 +230,29 @@ std::string FacilityEngine::simplifiedRemainingTime(const uint32_t &seconds) con
 /// \brief Return ultimate url, empty is not found or already ultimate
 std::string FacilityEngine::ultimateUrl() const
 {
-    #ifdef ULTRACOPIER_VERSION_ULTIMATE
-    return std::string();
-    #else
+    if(ProductKey::productKey->isUltimate())
+        return std::string();
+    else
+    {
         #if defined(Q_OS_WIN32) || defined(Q_OS_MAC)
-        return "http://ultracopier.first-world.info/shop.html";
+        return "https://shop.first-world.info/";
         #else
         return std::string();
         #endif
-    #endif
+    }
+}
+
+bool FacilityEngine::isUltimate() const
+{
+    return ProductKey::productKey->isUltimate();
 }
 
 /// \brief Return the software name
 std::string FacilityEngine::softwareName() const
 {
+    #ifdef ULTRACOPIER_MODE_SUPERCOPIER
+    return "Supercopier";
+    #else
     return "Ultracopier";
+    #endif
 }

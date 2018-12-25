@@ -1,6 +1,7 @@
 #include "ListThread.h"
 #include <QStorageInfo>
 #include <QMutexLocker>
+#include <QtGlobal>
 #include "../../../cpp11addition.h"
 
 ListThread::ListThread(FacilityInterface * facilityInterface)
@@ -79,7 +80,7 @@ void ListThread::transferInodeIsClosed()
 {
     numberOfInodeOperation--;
     #ifdef ULTRACOPIER_PLUGIN_DEBUG_SCHEDULER
-    ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,QStringLiteral("numberOfInodeOperation: %1").arg(numberOfInodeOperation));
+    ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"numberOfInodeOperation: "+std::to_string(numberOfInodeOperation));
     #endif
     TransferThread *temp_transfer_thread=qobject_cast<TransferThread *>(QObject::sender());
     if(temp_transfer_thread==NULL)
@@ -483,9 +484,38 @@ bool ListThread::newCopy(const std::vector<std::string> &sources,const std::stri
         ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Warning,"unable to get new thread");
         return false;
     }
-    scanFileOrFolderThread->addToList(sources,destination);
+    std::regex base_regex("^[a-z][a-z][a-z]*:/.*");
+    std::smatch base_match;
+    std::vector<std::string> sourcesClean;
+    unsigned int index=0;
+    while(index<sources.size())
+    {
+        std::string source=sources.at(index);
+        //can be: file://192.168.0.99/share/file.txt
+        //can be: file:///C:/file.txt
+        //can be: file:///home/user/fileatrootunderunix
+        #ifndef Q_OS_WIN
+        if(stringStartWith(source,"file:///"))
+            source.replace(0,7,"");
+        #else
+        if(stringStartWith(source,"file:///"))
+            source.replace(0,8,"");
+        else if(stringStartWith(source,"file://"))
+            source.replace(0,5,"");
+        else if(stringStartWith(source,"file:/"))
+            source.replace(0,6,"");
+        #endif
+        else if (std::regex_match(source, base_match, base_regex))
+            return false;
+        if(index<99)
+            ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,sources.at(index)+" -> "+source);
+        index++;
+        sourcesClean.push_back(source);
+    }
+    ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"sourcesClean: "+stringimplode(sourcesClean,";"));
+    scanFileOrFolderThread->addToList(sourcesClean,destination);
     scanThreadHaveFinish(true);
-    detectDrivesOfCurrentTransfer(sources,destination);
+    detectDrivesOfCurrentTransfer(sourcesClean,destination);
     return true;
 }
 
@@ -1160,21 +1190,20 @@ uint64_t ListThread::addToTransfer(const QFileInfo& source,const QFileInfo& dest
     if(!source.isSymLink())
         size=source.size();
     const std::string &drive=driveManagement.getDrive(destination.absoluteFilePath().toStdString());
-    if(drive.empty())
-        abort();
-    if(mode!=Ultracopier::Move || drive!=driveManagement.getDrive(source.absoluteFilePath().toStdString()))
-    {
-        if(requiredSpace.find(drive)!=requiredSpace.cend())
+    if(!drive.empty())//can be a network drive
+        if(mode!=Ultracopier::Move || drive!=driveManagement.getDrive(source.absoluteFilePath().toStdString()))
         {
-            requiredSpace[drive]+=size;
-            ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,QStringLiteral("space needed add: %1, space needed: %2, on: %3").arg(size).arg(requiredSpace.at(drive)).arg(QString::fromStdString(drive)).toStdString());
+            if(requiredSpace.find(drive)!=requiredSpace.cend())
+            {
+                requiredSpace[drive]+=size;
+                ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,QStringLiteral("space needed add: %1, space needed: %2, on: %3").arg(size).arg(requiredSpace.at(drive)).arg(QString::fromStdString(drive)).toStdString());
+            }
+            else
+            {
+                requiredSpace[drive]=size;
+                ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,QStringLiteral("set space %1 needed, on: %2").arg(size).arg(QString::fromStdString(drive)).toStdString());
+            }
         }
-        else
-        {
-            requiredSpace[drive]=size;
-            ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,QStringLiteral("set space %1 needed, on: %2").arg(size).arg(QString::fromStdString(drive)).toStdString());
-        }
-    }
     bytesToTransfer+= size;
     ActionToDoTransfer temp;
     temp.id		= generateIdNumber();
@@ -1711,7 +1740,7 @@ void ListThread::doNewActions_start_transfer()
 void ListThread::doNewActions_inode_manipulation()
 {
     #ifdef ULTRACOPIER_PLUGIN_DEBUG_SCHEDULER
-    ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,QStringLiteral("actionToDoList.size(): %1").arg(actionToDoListTransfer.size()));
+    ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"actionToDoList.size(): "+std::to_string(actionToDoListTransfer.size()));
     #endif
     if(stopIt)
         checkIfReadyToCancel();
@@ -1799,7 +1828,7 @@ void ListThread::doNewActions_inode_manipulation()
                     int_for_transfer_thread_search++;
                     numberOfInodeOperation++;
                     #ifdef ULTRACOPIER_PLUGIN_DEBUG_SCHEDULER
-                    ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,QStringLiteral("numberOfInodeOperation: %1").arg(numberOfInodeOperation));
+                    ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"numberOfInodeOperation: "+std::to_string(numberOfInodeOperation));
                     #endif
                     break;
                 }
@@ -1814,7 +1843,7 @@ void ListThread::doNewActions_inode_manipulation()
                 break;
             }
             #ifdef ULTRACOPIER_PLUGIN_DEBUG_SCHEDULER
-            ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,QStringLiteral("numberOfInodeOperation: %1").arg(numberOfInodeOperation));
+            ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"numberOfInodeOperation: "+std::to_string(numberOfInodeOperation));
             #endif
             if(numberOfInodeOperation>=inodeThreads)
                 break;
@@ -1949,7 +1978,7 @@ void ListThread::mkPathFirstFolderFinish()
                     updateTheStatus();
                 numberOfInodeOperation--;
                 #ifdef ULTRACOPIER_PLUGIN_DEBUG_SCHEDULER
-                ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,QStringLiteral("numberOfInodeOperation: %1").arg(numberOfInodeOperation));
+                ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"numberOfInodeOperation: "+std::to_string(numberOfInodeOperation));
                 #endif
                 doNewActions_inode_manipulation();
                 return;
@@ -1975,7 +2004,7 @@ void ListThread::mkPathFirstFolderFinish()
                     updateTheStatus();
                 numberOfInodeOperation--;
                 #ifdef ULTRACOPIER_PLUGIN_DEBUG_SCHEDULER
-                ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,QStringLiteral("numberOfInodeOperation: %1").arg(numberOfInodeOperation));
+                ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"numberOfInodeOperation: "+std::to_string(numberOfInodeOperation));
                 #endif
                 doNewActions_inode_manipulation();
                 return;

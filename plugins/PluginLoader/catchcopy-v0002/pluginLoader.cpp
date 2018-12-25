@@ -34,6 +34,7 @@ WindowsExplorerLoader::WindowsExplorerLoader()
     is64Bits=false;
     optionsWidget=new OptionsWidget();
     connect(optionsWidget,&OptionsWidget::sendAllDllIsImportant,this,&WindowsExplorerLoader::setAllDllIsImportant);
+    connect(optionsWidget,&OptionsWidget::sendAllUserIsImportant,this,&WindowsExplorerLoader::setAllUserIsImportant);
     connect(optionsWidget,&OptionsWidget::sendDebug,this,&WindowsExplorerLoader::setDebug);
 
 #if defined(_M_X64)//64Bits
@@ -84,7 +85,8 @@ void WindowsExplorerLoader::setEnabled(const bool &needBeRegistred)
     }
     this->needBeRegistred=needBeRegistred;
     unsigned int index=0;
-    ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,QStringLiteral("start, needBeRegistred: %1, allDllIsImportant: %2").arg(needBeRegistred).arg(allDllIsImportant).toStdString());
+    ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,QStringLiteral("start, needBeRegistred: %1, allDllIsImportant: %2, allDllIsImportant: %3")
+                             .arg(needBeRegistred).arg(allDllIsImportant).arg(allUserIsImportant).toStdString());
 
     bool oneHaveFound=false;
     index=0;
@@ -301,7 +303,7 @@ void WindowsExplorerLoader::setResources(OptionInterface * options, const std::s
     Q_UNUSED(pluginPath);
     Q_UNUSED(portableVersion);
     #ifdef ULTRACOPIER_PLUGIN_ALL_IN_ONE
-    this->pluginPath=QCoreApplication::applicationDirPath()+"/";
+    this->pluginPath=QCoreApplication::applicationDirPath().toStdString()+"/";
     #else
     this->pluginPath=pluginPath;
     #endif
@@ -310,9 +312,11 @@ void WindowsExplorerLoader::setResources(OptionInterface * options, const std::s
     {
         std::vector<std::pair<std::string, std::string> > KeysList;
         KeysList.push_back(std::pair<std::string, std::string>("allDllIsImportant","false"));
+        KeysList.push_back(std::pair<std::string, std::string>("allUserIsImportant","false"));
         KeysList.push_back(std::pair<std::string, std::string>("Debug","false"));
         optionsEngine->addOptionGroup(KeysList);
         allDllIsImportant=stringtobool(optionsEngine->getOptionValue("allDllIsImportant"));
+        allUserIsImportant=stringtobool(optionsEngine->getOptionValue("allUserIsImportant"));
         Debug=stringtobool(optionsEngine->getOptionValue("Debug"));
         optionsWidget->setAllDllIsImportant(allDllIsImportant);
         optionsWidget->setDebug(Debug);
@@ -321,6 +325,8 @@ void WindowsExplorerLoader::setResources(OptionInterface * options, const std::s
 
 bool WindowsExplorerLoader::RegisterShellExtDll(const std::string &dllPath, const bool &bRegister, const bool &quiet)
 {
+    if(allUserIsImportant)
+        stringreplaceOne(dllPath,".dll","all.dll");
     if(Debug)
     {
         std::string message;
@@ -361,9 +367,9 @@ bool WindowsExplorerLoader::RegisterShellExtDll(const std::string &dllPath, cons
         QString out=QString::fromLocal8Bit(process.readAllStandardOutput());
         QString outError=QString::fromLocal8Bit(process.readAllStandardError());
         if(!out.isEmpty())
-            ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"regsvr32 output: "+out);
+            ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"regsvr32 output: "+out.toStdString());
         if(!outError.isEmpty())
-            ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"regsvr32 error output: "+outError);
+            ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"regsvr32 error output: "+outError.toStdString());
     }
     #else
     result=0;
@@ -406,7 +412,7 @@ bool WindowsExplorerLoader::RegisterShellExtDll(const std::string &dllPath, cons
             sei.fMask = SEE_MASK_UNICODE;
             sei.lpVerb = TEXT("runas");
             sei.lpFile = TEXT("regsvr32.exe");
-            ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"in win32 mode: arrayArg: "+QString::fromWCharArray(arrayArg,size_lenght));
+            ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"in win32 mode: arrayArg: "+QString::fromWCharArray(arrayArg,size_lenght).toStdString());
             sei.lpParameters = arrayArg;
             sei.nShow = SW_SHOW;
             ok=ShellExecuteEx(&sei);
@@ -441,6 +447,12 @@ void WindowsExplorerLoader::setAllDllIsImportant(bool allDllIsImportant)
 {
     this->allDllIsImportant=allDllIsImportant;
     optionsEngine->setOptionValue("allDllIsImportant",std::to_string(allDllIsImportant));
+}
+
+void WindowsExplorerLoader::setAllUserIsImportant(bool allUserIsImportant)
+{
+    this->allUserIsImportant=allUserIsImportant;
+    optionsEngine->setOptionValue("allUserIsImportant",std::to_string(allUserIsImportant));
 }
 
 void WindowsExplorerLoader::setDebug(bool Debug)

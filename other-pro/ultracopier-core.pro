@@ -1,6 +1,7 @@
 CONFIG += c++11
 QMAKE_CXXFLAGS+="-std=c++0x -Wall -Wextra"
 mac:QMAKE_CXXFLAGS+="-stdlib=libc++"
+#QMAKE_CXXFLAGS+="-Wall -Wextra -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-unused-macros -Wno-newline-eof -Wno-exit-time-destructors -Wno-global-constructors -Wno-gnu-zero-variadic-macro-arguments -Wno-documentation -Wno-shadow -Wno-missing-prototypes -Wno-padded -Wno-covered-switch-default -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-switch-enum -Wno-undefined-reinterpret-cast -Wno-unreachable-code-break -Wno-sign-conversion -Wno-float-conversion"
 
 TEMPLATE = app
 QT += network xml widgets
@@ -34,7 +35,8 @@ macx {
 FORMS += $$PWD/../HelpDialog.ui \
     $$PWD/../PluginInformation.ui \
     $$PWD/../OptionDialog.ui \
-    $$PWD/../OSSpecific.ui
+    $$PWD/../OSSpecific.ui \
+    $$PWD/../ProductKey.ui
 RESOURCES += \
     $$PWD/../resources/ultracopier-resources.qrc \
     $$PWD/../resources/ultracopier-resources_unix.qrc \
@@ -75,7 +77,7 @@ HEADERS += $$PWD/../ResourcesManager.h \
     $$PWD/../interface/PluginInterface_CopyEngine.h \
     $$PWD/../interface/OptionInterface.h \
     $$PWD/../Variable.h \
-    $$PWD/../PluginLoader.h \
+    $$PWD/../PluginLoaderCore.h \
     $$PWD/../interface/PluginInterface_PluginLoader.h \
     $$PWD/../OptionDialog.h \
     $$PWD/../LocalPluginOptions.h \
@@ -88,7 +90,8 @@ HEADERS += $$PWD/../ResourcesManager.h \
     $$PWD/../StructEnumDefinition_UltracopierSpecific.h \
     $$PWD/../OSSpecific.h \
     $$PWD/../cpp11addition.h \
-    $$PWD/../InternetUpdater.h
+    $$PWD/../InternetUpdater.h \
+    $$PWD/../ProductKey.h
 SOURCES += $$PWD/../ThemesManager.cpp \
     $$PWD/../ResourcesManager.cpp \
     $$PWD/../main.cpp \
@@ -112,7 +115,7 @@ SOURCES += $$PWD/../ThemesManager.cpp \
     $$PWD/../CopyListener.cpp \
     $$PWD/../CopyEngineManager.cpp \
     $$PWD/../Core.cpp \
-    $$PWD/../PluginLoader.cpp \
+    $$PWD/../PluginLoaderCore.cpp \
     $$PWD/../OptionDialog.cpp \
     $$PWD/../LocalPluginOptions.cpp \
     $$PWD/../LocalListener.cpp \
@@ -123,7 +126,8 @@ SOURCES += $$PWD/../ThemesManager.cpp \
     $$PWD/../cpp11addition.cpp \
     $$PWD/../DebugModel.cpp \
     $$PWD/../InternetUpdater.cpp \
-    $$PWD/../cpp11additionstringtointcpp.cpp
+    $$PWD/../cpp11additionstringtointcpp.cpp \
+    $$PWD/../ProductKey.cpp
 INCLUDEPATH += \
     $$PWD/../lib/qt-tar-xz/
 

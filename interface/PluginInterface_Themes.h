@@ -77,7 +77,7 @@ class PluginInterface_Themes : public QWidget
         //user ask ask to add folder (add it with interface ask source/destination)
         void userAddFolder(const Ultracopier::CopyMode &mode) const;
         void userAddFile(const Ultracopier::CopyMode &mode) const;
-        void urlDropped(const std::vector<std::string> &urls) const;
+        void urlDropped(const std::vector<std::string> &urls) const;//absolute path, can start by file:/
         //action on the copy
         void pause() const;
         void resume() const;
@@ -110,6 +110,8 @@ class PluginInterface_ThemesFactory : public QObject
         void debugInformation(const Ultracopier::DebugLevel &level,const std::string &fonction,const std::string &text,const std::string &file,const int &ligne) const;
 };
 
+#ifndef ULTRACOPIER_PLUGIN_ALL_IN_ONE
 Q_DECLARE_INTERFACE(PluginInterface_ThemesFactory,"first-world.info.ultracopier.PluginInterface.ThemesFactory/1.2.4.0");
+#endif
 
 #endif // PLUGININTERFACE_THEMES_H

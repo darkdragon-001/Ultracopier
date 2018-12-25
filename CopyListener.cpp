@@ -18,7 +18,7 @@ CopyListener::CopyListener(OptionDialog *optionDialog)
 {
     stopIt=false;
     this->optionDialog=optionDialog;
-    pluginLoader=new PluginLoader(optionDialog);
+    pluginLoader=new PluginLoaderCore(optionDialog);
     //load the options
     tryListen=false;
     PluginsManager::pluginsManager->lockPluginListEdition();
@@ -29,7 +29,7 @@ CopyListener::CopyListener(OptionDialog *optionDialog)
     connect(PluginsManager::pluginsManager,&PluginsManager::onePluginWillBeRemoved,		this,&CopyListener::onePluginWillBeRemoved,Qt::DirectConnection);
     #endif
     connect(PluginsManager::pluginsManager,&PluginsManager::pluginListingIsfinish,			this,&CopyListener::allPluginIsloaded,Qt::QueuedConnection);
-    connect(pluginLoader,&PluginLoader::pluginLoaderReady,			this,&CopyListener::pluginLoaderReady);
+    connect(pluginLoader,&PluginLoaderCore::pluginLoaderReady,			this,&CopyListener::pluginLoaderReady);
     foreach(PluginsAvailable currentPlugin,list)
         emit previouslyPluginAdded(currentPlugin);
     PluginsManager::pluginsManager->unlockPluginListEdition();
@@ -106,7 +106,7 @@ void CopyListener::onePluginAdded(const PluginsAvailable &plugin)
         return;
     }
     //check if found
-    int index=0;
+    unsigned int index=0;
     while(index<pluginList.size())
     {
         if(pluginList.at(index).listenInterface==listen)
@@ -169,12 +169,12 @@ void CopyListener::onePluginWillBeRemoved(const PluginsAvailable &plugin)
 {
     if(plugin.category!=PluginType_Listener)
         return;
-    int indexPlugin=0;
+    unsigned int indexPlugin=0;
     while(indexPlugin<pluginList.size())
     {
         if((plugin.path+PluginsManager::getResolvedPluginName("listener"))==pluginList.at(indexPlugin).path)
         {
-            int index=0;
+            unsigned int index=0;
             while(index<copyRunningList.size())
             {
                 if(copyRunningList.at(index).listenInterface==pluginList.at(indexPlugin).listenInterface)

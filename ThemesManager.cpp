@@ -15,7 +15,11 @@
 #include "plugins/Themes/Oxygen/ThemesFactory.h"
 #endif
 
+#ifdef ULTRACOPIER_MODE_SUPERCOPIER
+#define ULTRACOPIER_DEFAULT_STYLE "Supercopier"
+#else
 #define ULTRACOPIER_DEFAULT_STYLE "Oxygen"
+#endif
 
 /// \warning All plugin remain loaded
 /// \todo get the current themes instance
@@ -112,7 +116,7 @@ void ThemesManager::onePluginAdded(const PluginsAvailable &plugin)
         return;
     }
     //check if found
-    int indexTemp=0;
+    unsigned int indexTemp=0;
     while(indexTemp<pluginList.size())
     {
         if(pluginList.at(indexTemp).factory==factory)
@@ -153,7 +157,7 @@ void ThemesManager::onePluginWillBeRemoved(const PluginsAvailable &plugin)
     if(plugin.category!=PluginType_Themes)
         return;
     ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"start: "+plugin.name);
-    int index=0;
+    unsigned int index=0;
     while(index<pluginList.size())
     {
         if(pluginList.at(index).plugin==plugin)
@@ -165,12 +169,12 @@ void ThemesManager::onePluginWillBeRemoved(const PluginsAvailable &plugin)
                 pluginList.at(index).pluginLoader->unload();
                 delete pluginList.at(index).pluginLoader;
             }
-            if(currentPluginIndex==index)
+            if(currentPluginIndex==static_cast<int>(index))
                 currentPluginIndex=-1;
-            if(index<currentPluginIndex)
+            if(static_cast<int>(index)<currentPluginIndex)
                 currentPluginIndex--;
             pluginList.erase(pluginList.begin()+index);
-            if(currentPluginIndex>=pluginList.size())
+            if(static_cast<unsigned int>(currentPluginIndex)>=pluginList.size())
             {
                 ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Critical,"plugin is out of inder!");
                 currentPluginIndex=-1;
@@ -190,13 +194,13 @@ QIcon ThemesManager::loadIcon(const std::string &fileName)
 {
     if(currentPluginIndex==-1)
         return QIcon();
-    if(pluginList.at(currentPluginIndex).factory==NULL)
+    if(pluginList.at(static_cast<unsigned int>(currentPluginIndex)).factory==NULL)
     {
         ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Critical,"Try get icon when the factory is not loaded");
         return QIcon();
     }
     ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"Send interface pixmap: "+fileName);
-    return pluginList.at(currentPluginIndex).factory->getIcon(fileName);
+    return pluginList.at(static_cast<unsigned int>(currentPluginIndex)).factory->getIcon(fileName);
 }
 
 void ThemesManager::allPluginIsLoaded()
@@ -213,7 +217,7 @@ void ThemesManager::allPluginIsLoaded()
     {
         if(pluginList.at(index).plugin.name==name)
         {
-            currentPluginIndex=index;
+            currentPluginIndex=static_cast<int>(index);
             emit theThemeIsReloaded();
             return;
         }
@@ -231,18 +235,18 @@ PluginInterface_Themes * ThemesManager::getThemesInstance()
         ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Warning,"Unable to load the interface, copy aborted");
         return NULL;
     }
-    ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"Send interface: "+pluginList.at(currentPluginIndex).plugin.name);
-    if((unsigned int)currentPluginIndex>=pluginList.size())
+    ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"Send interface: "+pluginList.at(static_cast<unsigned int>(currentPluginIndex)).plugin.name);
+    if(static_cast<unsigned int>(currentPluginIndex)>=pluginList.size())
     {
         ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Warning,"Unable to load the interface, internal selection bug");
         return NULL;
     }
-    if(pluginList.at(currentPluginIndex).factory==NULL)
+    if(pluginList.at(static_cast<unsigned int>(currentPluginIndex)).factory==NULL)
     {
         ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Warning,"No plugin factory loaded to get an instance");
         return NULL;
     }
-    return pluginList.at(currentPluginIndex).factory->getInstance();
+    return pluginList.at(static_cast<unsigned int>(currentPluginIndex)).factory->getInstance();
 }
 
 #ifdef ULTRACOPIER_DEBUG
@@ -258,11 +262,11 @@ void ThemesManager::newOptionValue(const std::string &group,const std::string &n
     {
         if(!PluginsManager::pluginsManager->allPluginHaveBeenLoaded())
             return;
-        if(currentPluginIndex!=-1 && value!=pluginList.at(currentPluginIndex).plugin.name)
+        if(currentPluginIndex!=-1 && value!=pluginList.at(static_cast<unsigned int>(currentPluginIndex)).plugin.name)
         {
             //int tempCurrentPluginIndex=currentPluginIndex;
             emit theThemeNeedBeUnloaded();
-            ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"unload the themes: "+pluginList.at(currentPluginIndex).plugin.name+" ("+std::to_string(currentPluginIndex)+")");
+            ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"unload the themes: "+pluginList.at(static_cast<unsigned int>(currentPluginIndex)).plugin.name+" ("+std::to_string(currentPluginIndex)+")");
             /* Themes remain loaded for the options
              *if(pluginList.at(tempCurrentPluginIndex).options!=NULL)
             {

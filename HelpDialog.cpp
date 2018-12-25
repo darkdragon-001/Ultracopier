@@ -4,6 +4,7 @@
 \licence GPL3, see the file COPYING */
 
 #include "HelpDialog.h"
+#include "ProductKey.h"
 
 #include <QTreeWidgetItem>
 #include <QApplication>
@@ -31,7 +32,14 @@ HelpDialog::HelpDialog() :
     #endif // ULTRACOPIER_DEBUG
     //connect the about Qt
     connect(ui->pushButtonAboutQt,&QPushButton::toggled,&QApplication::aboutQt);
+    #ifdef ULTRACOPIER_MODE_SUPERCOPIER
+    setWindowTitle(tr("About Supercopier"));
+    #else
     setWindowTitle(tr("About Ultracopier"));
+    #endif
+    #ifndef ULTRACOPIER_INTERNET_SUPPORT
+    ui->checkUpdate->hide();
+    #endif
 }
 
 /// \brief Destruct the object
@@ -60,10 +68,12 @@ void HelpDialog::reloadTextValue()
 {
     ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"start");
     QString text=ui->label_ultracopier->text();
-    #ifdef ULTRACOPIER_VERSION_ULTIMATE
-    text=text.replace(QStringLiteral("%1"),QStringLiteral("Ultimate %1").arg(ULTRACOPIER_VERSION));
-    #else
-    text=text.replace(QStringLiteral("%1"),ULTRACOPIER_VERSION);
+    if(ProductKey::productKey->isUltimate())
+        text=text.replace(QStringLiteral("%1"),QStringLiteral("Ultimate %1").arg(ULTRACOPIER_VERSION));
+    else
+        text=text.replace(QStringLiteral("%1"),ULTRACOPIER_VERSION);
+    #ifdef ULTRACOPIER_MODE_SUPERCOPIER
+    text=text.replace(QStringLiteral("Ultracopier"),QStringLiteral("Supercopier"),Qt::CaseInsensitive);
     #endif
     ui->label_ultracopier->setText(text);
 
@@ -105,11 +115,7 @@ std::string HelpDialog::getWebSite()
 
 std::string HelpDialog::getUpdateUrl()
 {
-    #if defined(ULTRACOPIER_VERSION_ULTIMATE)
-        return tr("http://ultracopier.first-world.info/shop.html").toStdString();
-    #else
-        return tr("http://ultracopier.first-world.info/download.html").toStdString();
-    #endif
+    return tr("http://ultracopier.first-world.info/download.html").toStdString();
 }
 
 #ifdef ULTRACOPIER_DEBUG
@@ -132,3 +138,22 @@ void HelpDialog::on_pushButtonCrash_clicked()
     int *b=NULL;
     *b=3/a;
 }
+
+#ifdef ULTRACOPIER_INTERNET_SUPPORT
+void HelpDialog::on_checkUpdate_clicked()
+{
+    ui->status->setText(tr("Update checking..."));
+    emit checkUpdate();
+}
+
+void HelpDialog::newUpdate(const std::string &version) const
+{
+    ui->status->setText(tr("Update: %1").arg(QString::fromStdString(version)));
+}
+
+void HelpDialog::noNewUpdate() const
+{
+    if(!ui->status->text().isEmpty())
+        ui->status->setText(tr("No update"));
+}
+#endif

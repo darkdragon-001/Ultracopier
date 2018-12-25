@@ -18,15 +18,16 @@
 OptionEngine::OptionEngine()
 {
     //locate the settings
-    #ifdef ULTRACOPIER_VERSION_PORTABLE
-        QString settingsFilePath=ResourcesManager::resourcesManager->getWritablePath();
+    QString settingsFilePath=QString::fromStdString(ResourcesManager::resourcesManager->getWritablePath());
+    if(QFile::exists(settingsFilePath+"/Ultracopier.conf"))
+    {
         if(settingsFilePath!="")
             settings = new QSettings(settingsFilePath+QStringLiteral("Ultracopier.conf"),QSettings::IniFormat);
         else
             settings = NULL;
-    #else // ULTRACOPIER_VERSION_PORTABLE
+    }
+    else
         settings = new QSettings(QStringLiteral("Ultracopier"),QStringLiteral("Ultracopier"));
-    #endif // ULTRACOPIER_VERSION_PORTABLE
     if(settings!=NULL)
     {
         //do some write test
@@ -69,6 +70,7 @@ OptionEngine::OptionEngine()
     }
     else
         currentBackend=File;
+    connect(this,&OptionEngine::resetOptions,this,&OptionEngine::internal_resetToDefaultValue);
 }
 
 /// \brief Destroy the option
@@ -90,31 +92,29 @@ bool OptionEngine::addOptionGroup(const std::string &groupName,const std::vector
     if(currentBackend==File)
         settings->beginGroup(QString::fromStdString(groupName));
     //browse all key, and append it to the key
-    int index=0;
+    unsigned int index=0;
     //QList<OptionEngineGroupKey> KeyListTemp;
-    const int &loop_size=KeysList.size();
-    while(index<loop_size)
+    while(index<KeysList.size())
     {
         OptionEngineGroupKey theCurrentKey;
-        theCurrentKey.defaultValue=KeysList.at(index).second;
+        const std::pair<std::string, std::string> &key=KeysList.at(index);
+        theCurrentKey.defaultValue=key.second;
         //if memory backend, load the default value into the current value
         if(currentBackend==Memory)
             theCurrentKey.currentValue=theCurrentKey.defaultValue;
         else
         {
-            if(settings->contains(QString::fromStdString(KeysList.at(index).first)))//if file backend, load the default value from the file
+            if(settings->contains(QString::fromStdString(key.first)))//if file backend, load the default value from the file
             {
-                theCurrentKey.currentValue=settings->value(QString::fromStdString(KeysList.at(index).first)).toString().toStdString();
+                theCurrentKey.currentValue=settings->value(QString::fromStdString(key.first)).toString().toStdString();
                 #ifdef ULTRACOPIER_DEBUG
                 if(theCurrentKey.currentValue!=theCurrentKey.defaultValue)
                 {
-                    #ifdef ULTRACOPIER_VERSION_ULTIMATE
-                    if(groupName=="Ultracopier" && KeysList.at(index).first=="key")
+                    if(groupName=="Ultracopier" && key.first=="key")
                     {
                     }
                     else
-                    #endif
-                    ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Information,"The current key: "+groupName+", group: "+KeysList.at(index).first+", have value: "+theCurrentKey.currentValue);
+                        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Information,"The current key: "+groupName+", group: "+key.first+", have value: "+theCurrentKey.currentValue);
                 }
                 #endif
             }
@@ -122,7 +122,7 @@ bool OptionEngine::addOptionGroup(const std::string &groupName,const std::vector
             {
                 theCurrentKey.currentValue=theCurrentKey.defaultValue;
                 //to switch default value if is unchanged
-                //settings->setValue(KeysList.at(index).first,theCurrentKey.defaultValue);
+                //settings->setValue(key.first,theCurrentKey.defaultValue);
             }
             if(settings->status()!=QSettings::NoError)
             {
@@ -133,7 +133,7 @@ bool OptionEngine::addOptionGroup(const std::string &groupName,const std::vector
                 currentBackend=Memory;
             }
         }
-        GroupKeysList[groupName][KeysList.at(index).first]=theCurrentKey;
+        GroupKeysList[groupName][key.first]=theCurrentKey;
         index++;
     }
     //if the backend is file, leave into the group
@@ -231,6 +231,21 @@ void OptionEngine::internal_resetToDefaultValue()
             if(o.currentValue!=o.defaultValue)
             {
                 o.currentValue=o.defaultValue;
+
+                if(currentBackend==File)
+                {
+                    settings->beginGroup(QString::fromStdString(firstKey));
+                    settings->remove(QString::fromStdString(secondKey));
+                    settings->endGroup();
+                    if(settings->status()!=QSettings::NoError)
+                    {
+                        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Warning,"Have writing error, switch to memory only options");
+                        #ifdef ULTRACOPIER_VERSION_PORTABLE
+                        ResourcesManager::resourcesManager->disableWritablePath();
+                        #endif // ULTRACOPIER_VERSION_PORTABLE
+                        currentBackend=Memory;
+                    }
+                }
                 emit newOptionValue(firstKey,secondKey,o.currentValue);
             }
         }

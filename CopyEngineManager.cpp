@@ -120,6 +120,7 @@ void CopyEngineManager::onePluginAdded(const PluginsAvailable &plugin)
     #endif // ULTRACOPIER_DEBUG
     newItem.options=new LocalPluginOptions("CopyEngine-"+newItem.name);
     newItem.factory->setResources(newItem.options,plugin.writablePath,plugin.path,&FacilityEngine::facilityEngine,ULTRACOPIER_VERSION_PORTABLE_BOOL);
+    connect(OptionEngine::optionEngine,&OptionEngine::resetOptions,newItem.factory,&PluginInterface_CopyEngineFactory::resetOptions);
     newItem.optionsWidget=newItem.factory->options();
     newItem.supportedProtocolsForTheSource=newItem.factory->supportedProtocolsForTheSource();
     newItem.supportedProtocolsForTheDestination=newItem.factory->supportedProtocolsForTheDestination();
@@ -140,7 +141,7 @@ void CopyEngineManager::onePluginAdded(const PluginsAvailable &plugin)
 #ifndef ULTRACOPIER_PLUGIN_ALL_IN_ONE
 void CopyEngineManager::onePluginWillBeRemoved(const PluginsAvailable &plugin)
 {
-    int index=0;
+    unsigned int index=0;
     while(index<pluginList.size())
     {
         if(pluginList.at(index).path==plugin.path)
@@ -162,7 +163,7 @@ void CopyEngineManager::onePluginWillBeUnloaded(const PluginsAvailable &plugin)
     if(plugin.category!=PluginType_CopyEngine)
         return;
     ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"start");
-    int index=0;
+    unsigned int index=0;
     while(index<pluginList.size())
     {
         if(pluginList.at(index).path==plugin.path)
@@ -177,7 +178,8 @@ void CopyEngineManager::onePluginWillBeUnloaded(const PluginsAvailable &plugin)
 }
 #endif
 
-CopyEngineManager::returnCopyEngine CopyEngineManager::getCopyEngine(const Ultracopier::CopyMode &mode,const std::vector<std::string> &protocolsUsedForTheSources,const std::string &protocolsUsedForTheDestination)
+CopyEngineManager::returnCopyEngine CopyEngineManager::getCopyEngine(const Ultracopier::CopyMode &mode,
+    const std::vector<std::string> &protocolsUsedForTheSources,const std::string &protocolsUsedForTheDestination)
 {
     ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"start, pluginList.size(): "+std::to_string(pluginList.size())+", mode: "+std::to_string((int)mode)+", and particular protocol");
     returnCopyEngine temp;
@@ -251,7 +253,7 @@ CopyEngineManager::returnCopyEngine CopyEngineManager::getCopyEngine(const Ultra
     while(index<pluginList.size())
     {
         ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"Check matching: "+pluginList.at(index).name);
-        if(pluginList.at(index).name==name)
+        if(pluginList.at(index).name==name || name.empty())
         {
             if(mode==Ultracopier::Move && pluginList.at(index).canDoOnlyCopy)
             {

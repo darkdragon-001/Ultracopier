@@ -4,17 +4,29 @@
 <context>
     <name>Themes</name>
     <message>
-        <location filename="../../interface.cpp" line="+244"/>
+        <location filename="../../interface.cpp" line="+303"/>
+        <location line="+17"/>
+        <source>%1 is deprecated, Use %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-14"/>
+        <location line="+17"/>
+        <source>This will be the last version for Mac, but you can compile from source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Buy the Ultimate version to fund development</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+85"/>
         <source>File %1/%2, size: %3/%4</source>
         <translation type="unfinished">파일 %1/%2, 크기: %3/%4</translation>
     </message>
     <message>
-        <location line="+214"/>
+        <location line="+234"/>
         <source>Copy list</source>
         <translation type="unfinished">복사 목록</translation>
     </message>
@@ -44,7 +56,7 @@
         <translation type="unfinished">파일명, 0KB</translation>
     </message>
     <message>
-        <location line="+183"/>
+        <location line="+194"/>
         <location line="+12"/>
         <location line="+12"/>
         <source>Select a color</source>
@@ -61,7 +73,7 @@
 <context>
     <name>ThemesFactory</name>
     <message>
-        <location filename="../../ThemesFactory.cpp" line="+223"/>
+        <location filename="../../ThemesFactory.cpp" line="+284"/>
         <source>Don&apos;t close if errors are found</source>
         <translation type="unfinished">오류 발견시 종료 안함</translation>
     </message>
@@ -245,7 +257,7 @@
 <context>
     <name>themesOptions</name>
     <message>
-        <location filename="../../themesOptions.ui" line="+253"/>
+        <location filename="../../themesOptions.ui" line="+267"/>
         <source>Show dual progression</source>
         <translation type="unfinished"></translation>
     </message>
@@ -255,17 +267,17 @@
         <translation type="unfinished">메인 정보에 속도 표시</translation>
     </message>
     <message>
-        <location line="-161"/>
+        <location line="-175"/>
         <source>Use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+129"/>
         <source>Start with the &quot;more button&quot; pushed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="-106"/>
         <source>Minimize on close to systray</source>
         <translation type="unfinished"></translation>
     </message>
@@ -281,22 +293,27 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="-84"/>
         <source>Start minimized</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+116"/>
+        <location line="+253"/>
         <source>Click to edit the color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-145"/>
+        <location line="-159"/>
         <source> KB/s</source>
         <translation type="unfinished"> KB/초</translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location line="+43"/>
+        <source>Save position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
         <source>Informations</source>
         <translation type="unfinished"></translation>
     </message>
@@ -321,7 +338,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-203"/>
+        <location line="-94"/>
         <source>Always on top</source>
         <translation type="unfinished"></translation>
     </message>

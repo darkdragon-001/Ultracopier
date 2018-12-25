@@ -7,12 +7,14 @@
 #include <QMessageBox>
 #include <QWidget>
 #include <QStorageInfo>
+#include <iostream>
 
 #include "EventDispatcher.h"
 #include "ExtraSocket.h"
 #include "CompilerInfo.h"
 #include "ThemesManager.h"
 #include "cpp11addition.h"
+#include "ProductKey.h"
 
 #ifdef Q_OS_UNIX
     #include <unistd.h>
@@ -36,10 +38,6 @@
 #include <QDomElement>
 #endif
 
-#ifdef ULTRACOPIER_VERSION_ULTIMATE
-#include <QInputDialog>
-#endif
-
 /// \brief Initiate the ultracopier event dispatcher and check if no other session is running
 EventDispatcher::EventDispatcher()
 {
@@ -55,15 +53,47 @@ EventDispatcher::EventDispatcher()
     qRegisterMetaType<std::vector<std::string> >("std::vector<std::string>");
 
     copyServer=new CopyListener(&optionDialog);
-    connect(&localListener, &LocalListener::cli,                    &cliParser,     &CliParser::cli,Qt::QueuedConnection);
-    connect(ThemesManager::themesManager,         &ThemesManager::newThemeOptions,	&optionDialog,	&OptionDialog::newThemeOptions);
-    connect(&cliParser,     &CliParser::newCopyWithoutDestination,	copyServer,     &CopyListener::copyWithoutDestination);
-    connect(&cliParser,     &CliParser::newCopy,					copyServer,     &CopyListener::copy);
-    connect(&cliParser,     &CliParser::newMoveWithoutDestination,	copyServer,     &CopyListener::moveWithoutDestination);
-    connect(&cliParser,     &CliParser::newMove,					copyServer,     &CopyListener::move);
-    connect(copyServer,     &CopyListener::newClientList,			&optionDialog,  &OptionDialog::newClientList);
+    if(!connect(&localListener, &LocalListener::cli,                    &cliParser,     &CliParser::cli,Qt::QueuedConnection))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
+    if(!connect(ThemesManager::themesManager,         &ThemesManager::newThemeOptions,	&optionDialog,	&OptionDialog::newThemeOptions))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
+    if(!connect(&cliParser,     &CliParser::newCopyWithoutDestination,	copyServer,     &CopyListener::copyWithoutDestination))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
+    if(!connect(&cliParser,     &CliParser::newCopy,					copyServer,     &CopyListener::copy))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
+    if(!connect(&cliParser,     &CliParser::newMoveWithoutDestination,	copyServer,     &CopyListener::moveWithoutDestination))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
+    if(!connect(&cliParser,     &CliParser::newMove,					copyServer,     &CopyListener::move))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
+    if(!connect(copyServer,     &CopyListener::newClientList,			&optionDialog,  &OptionDialog::newClientList))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
     #ifdef ULTRACOPIER_PLUGIN_IMPORT_SUPPORT
-    connect(&cliParser,     &CliParser::tryLoadPlugin,				PluginsManager::pluginsManager,        &PluginsManager::tryLoadPlugin);
+    if(!connect(&cliParser,     &CliParser::tryLoadPlugin,				PluginsManager::pluginsManager,        &PluginsManager::tryLoadPlugin))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
     #endif
     copyMoveEventIdIndex=0;
     backgroundIcon=NULL;
@@ -87,7 +117,7 @@ EventDispatcher::EventDispatcher()
     ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Information,std::string("Qt version: ")+qVersion()+" "+std::to_string(QT_VERSION));
     ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Information,std::string("ULTRACOPIER_PLATFORM_NAME: ")+ULTRACOPIER_PLATFORM_NAME.toStdString());
     ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Information,"Application path: "+QCoreApplication::applicationFilePath().toStdString()+" "+std::to_string(QCoreApplication::applicationPid()));
-    ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Information,COMPILERINFO);
+    //ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Information,COMPILERINFO);
     ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Information,"Local socket: "+ExtraSocket::pathSocket(ULTRACOPIER_SOCKETNAME));
     #if defined(ULTRACOPIER_DEBUG) && defined(ULTRACOPIER_PLUGIN_ALL_IN_ONE)
         #ifndef ULTRACOPIER_PLUGIN_ALL_IN_ONE_DIRECT
@@ -126,55 +156,12 @@ EventDispatcher::EventDispatcher()
         //then ultracopier have been updated
     }
     OptionEngine::optionEngine->setOptionValue("Ultracopier","Last_version_used",ULTRACOPIER_VERSION);
-    int a=stringtouint32(OptionEngine::optionEngine->getOptionValue("Ultracopier","ActionOnManualOpen"));
-    if(a<0 || a>2)
+    unsigned int a=stringtouint32(OptionEngine::optionEngine->getOptionValue("Ultracopier","ActionOnManualOpen"));
+    if(a>2)
         OptionEngine::optionEngine->setOptionValue("Ultracopier","ActionOnManualOpen","1");
     a=stringtouint32(OptionEngine::optionEngine->getOptionValue("Ultracopier","GroupWindowWhen"));
-    if(a<0 || a>5)
+    if(a>5)
         OptionEngine::optionEngine->setOptionValue("Ultracopier","GroupWindowWhen","0");
-
-    #ifdef ULTRACOPIER_VERSION_ULTIMATE
-    #ifdef  ULTRACOPIER_ILLEGAL
-    static bool crackedVersion=true;
-    #else
-    static bool crackedVersion=false;
-    #endif
-    if(!crackedVersion)
-    {
-        while(1)
-        {
-            ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"ultimate key");
-            QString key=QString::fromStdString(OptionEngine::optionEngine->getOptionValue("Ultracopier","key"));
-            if(!key.isEmpty())
-            {
-                QCryptographicHash hash(QCryptographicHash::Sha224);
-                hash.addData(QStringLiteral("U2NgvbKVrVwlaXnx").toUtf8());
-                hash.addData(key.toUtf8());
-                const QByteArray &result=hash.result();
-                if(!result.isEmpty() && result.at(0)==0x00 && result.at(1)==0x00)
-                    break;
-            }
-            key=QInputDialog::getText(NULL,tr("Key"),tr("Give the key of this software, more information on <a href=\"http://ultracopier.first-world.info/\">ultracopier.first-world.info</a>"));
-            if(key.isEmpty())
-            {
-                QCoreApplication::quit();
-                stopIt=true;
-                return;
-            }
-            {
-                QCryptographicHash hash(QCryptographicHash::Sha224);
-                hash.addData(QStringLiteral("U2NgvbKVrVwlaXnx").toUtf8());
-                hash.addData(key.toUtf8());
-                const QByteArray &result=hash.result();
-                if(!result.isEmpty() && result.at(0)==0x00 && result.at(1)==0x00)
-                {
-                    OptionEngine::optionEngine->setOptionValue("Ultracopier","key",key.toStdString());
-                    break;
-                }
-            }
-        }
-    }
-    #endif
 
     connect(&cliParser,	&CliParser::newTransferList,core,	&Core::newTransferList);
 }
@@ -234,12 +221,36 @@ void EventDispatcher::initFunction()
         return;
     }
     ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"Initialize the variable of event loop");
-    connect(copyServer,	&CopyListener::newCopyWithoutDestination,	core,		&Core::newCopyWithoutDestination,Qt::DirectConnection);
-    connect(copyServer,	&CopyListener::newCopy,						core,		&Core::newCopy,Qt::DirectConnection);
-    connect(copyServer,	&CopyListener::newMoveWithoutDestination,	core,		&Core::newMoveWithoutDestination,Qt::DirectConnection);
-    connect(copyServer,	&CopyListener::newMove,						core,		&Core::newMove,Qt::DirectConnection);
-    connect(core,		&Core::copyFinished,						copyServer,	&CopyListener::copyFinished,Qt::DirectConnection);
-    connect(core,		&Core::copyCanceled,						copyServer,	&CopyListener::copyCanceled,Qt::DirectConnection);
+    if(!connect(copyServer,	&CopyListener::newCopyWithoutDestination,	core,		&Core::newCopyWithoutDestination,Qt::DirectConnection))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
+    if(!connect(copyServer,	&CopyListener::newCopy,						core,		&Core::newCopy,Qt::DirectConnection))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
+    if(!connect(copyServer,	&CopyListener::newMoveWithoutDestination,	core,		&Core::newMoveWithoutDestination,Qt::DirectConnection))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
+    if(!connect(copyServer,	&CopyListener::newMove,						core,		&Core::newMove,Qt::DirectConnection))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
+    if(!connect(core,		&Core::copyFinished,						copyServer,	&CopyListener::copyFinished,Qt::DirectConnection))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
+    if(!connect(core,		&Core::copyCanceled,						copyServer,	&CopyListener::copyCanceled,Qt::DirectConnection))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
     if(localListener.tryConnect())
     {
         stopIt=true;
@@ -254,36 +265,123 @@ void EventDispatcher::initFunction()
         //connect the slot
         //quit is for this object
 //		connect(core,		&Core::newCanDoOnlyCopy,					backgroundIcon,	&SystrayIcon::newCanDoOnlyCopy,Qt::DirectConnection);
-        connect(backgroundIcon,	&SystrayIcon::quit,this,&EventDispatcher::quit);
+        if(!connect(backgroundIcon,	&SystrayIcon::quit,this,&EventDispatcher::quit))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
         //show option is for OptionEngine object
-        connect(backgroundIcon,	&SystrayIcon::showOptions,					&optionDialog,	&OptionDialog::show,Qt::DirectConnection);
-        connect(&cliParser,     &CliParser::showOptions,					&optionDialog,	&OptionDialog::show,Qt::DirectConnection);
-        connect(copyServer,	&CopyListener::listenerReady,					backgroundIcon,	&SystrayIcon::listenerReady,Qt::DirectConnection);
-        connect(copyServer,	&CopyListener::pluginLoaderReady,				backgroundIcon,	&SystrayIcon::pluginLoaderReady,Qt::DirectConnection);
-        connect(backgroundIcon,	&SystrayIcon::tryCatchCopy,					copyServer,	&CopyListener::listen,Qt::DirectConnection);
-        connect(backgroundIcon,	&SystrayIcon::tryUncatchCopy,				copyServer,	&CopyListener::close,Qt::DirectConnection);
+        if(!connect(backgroundIcon,	&SystrayIcon::showOptions,					&optionDialog,	&OptionDialog::show,Qt::DirectConnection))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
+        if(!connect(backgroundIcon,	&SystrayIcon::showProductKey,					ProductKey::productKey,	&ProductKey::show,Qt::DirectConnection))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
+        if(!connect(ProductKey::productKey,	&ProductKey::changeToUltimate,backgroundIcon,	&SystrayIcon::changeToUltimate,Qt::DirectConnection))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
+        if(!connect(&cliParser,     &CliParser::showOptions,					&optionDialog,	&OptionDialog::show,Qt::DirectConnection))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
+        if(!connect(copyServer,	&CopyListener::listenerReady,					backgroundIcon,	&SystrayIcon::listenerReady,Qt::DirectConnection))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
+        if(!connect(copyServer,	&CopyListener::pluginLoaderReady,				backgroundIcon,	&SystrayIcon::pluginLoaderReady,Qt::DirectConnection))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
+        if(!connect(backgroundIcon,	&SystrayIcon::tryCatchCopy,					copyServer,	&CopyListener::listen,Qt::DirectConnection))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
+        if(!connect(backgroundIcon,	&SystrayIcon::tryUncatchCopy,				copyServer,	&CopyListener::close,Qt::DirectConnection))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
         if(stringtobool(OptionEngine::optionEngine->getOptionValue("CopyListener","CatchCopyAsDefault")))
             copyServer->listen();
         ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"copyServer.oneListenerIsLoaded(): "+std::to_string(copyServer->oneListenerIsLoaded()));
         //backgroundIcon->readyToListen(copyServer.oneListenerIsLoaded());
 
         #ifdef ULTRACOPIER_DEBUG
-        connect(backgroundIcon,	&SystrayIcon::saveBugReport,                    DebugEngine::debugEngine,		&DebugEngine::saveBugReport,Qt::QueuedConnection);
+        if(!connect(backgroundIcon,	&SystrayIcon::saveBugReport,                    DebugEngine::debugEngine,		&DebugEngine::saveBugReport,Qt::QueuedConnection))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
         #endif
-        connect(backgroundIcon,	&SystrayIcon::addWindowCopyMove,				core,		&Core::addWindowCopyMove,Qt::DirectConnection);
-        connect(backgroundIcon,	&SystrayIcon::addWindowTransfer,				core,		&Core::addWindowTransfer,Qt::DirectConnection);
-        connect(copyEngineList,	&CopyEngineManager::addCopyEngine,				backgroundIcon,	&SystrayIcon::addCopyEngine,Qt::DirectConnection);
-        connect(copyEngineList,	&CopyEngineManager::removeCopyEngine,			backgroundIcon,	&SystrayIcon::removeCopyEngine,Qt::DirectConnection);
+        if(!connect(backgroundIcon,	&SystrayIcon::addWindowCopyMove,				core,		&Core::addWindowCopyMove,Qt::DirectConnection))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
+        if(!connect(backgroundIcon,	&SystrayIcon::addWindowTransfer,				core,		&Core::addWindowTransfer,Qt::DirectConnection))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
+        if(!connect(copyEngineList,	&CopyEngineManager::addCopyEngine,				backgroundIcon,	&SystrayIcon::addCopyEngine,Qt::DirectConnection))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
+        if(!connect(copyEngineList,	&CopyEngineManager::removeCopyEngine,			backgroundIcon,	&SystrayIcon::removeCopyEngine,Qt::DirectConnection))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
         #ifdef ULTRACOPIER_INTERNET_SUPPORT
-        connect(&internetUpdater,&InternetUpdater::newUpdate,                   backgroundIcon, &SystrayIcon::newUpdate);
+        if(!connect(&internetUpdater,&InternetUpdater::newUpdate,                   backgroundIcon, &SystrayIcon::newUpdate))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
+        if(!connect(&theHelp,&HelpDialog::checkUpdate,                              &internetUpdater,&InternetUpdater::checkUpdate))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
+        if(!connect(&internetUpdater,&InternetUpdater::newUpdate,                   &theHelp,&HelpDialog::newUpdate))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
+        if(!connect(&internetUpdater,&InternetUpdater::noNewUpdate,                 &theHelp,&HelpDialog::noNewUpdate))
+        {
+            std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+            abort();
+        }
         #endif
         copyEngineList->setIsConnected();
         copyServer->resendState();
+
+        connect(&cliParser,     &CliParser::showSystrayMessage,                    backgroundIcon,&SystrayIcon::showSystrayMessage,Qt::QueuedConnection);
     }
     //conntect the last chance signal before quit
-    connect(QCoreApplication::instance(),&QCoreApplication::aboutToQuit,this,&EventDispatcher::quit,Qt::DirectConnection);
+    if(!connect(QCoreApplication::instance(),&QCoreApplication::aboutToQuit,this,&EventDispatcher::quit,Qt::DirectConnection))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
     //connect the slot for the help dialog
-    connect(backgroundIcon,&SystrayIcon::showHelp,&theHelp,&HelpDialog::show);
+    if(!connect(backgroundIcon,&SystrayIcon::showHelp,&theHelp,&HelpDialog::show))
+    {
+        std::cerr << "connect error at " << __FILE__ << ":" << std::to_string(__LINE__) << std::endl;
+        abort();
+    }
     #ifdef ULTRACOPIER_DEBUG
     DebugModel::debugModel->setupTheTimer();
     #endif
@@ -306,7 +404,7 @@ std::string EventDispatcher::GetOSDisplayString()
    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
    bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO*) &osvi);
 
-   if(bOsVersionInfoEx == NULL)
+   if(bOsVersionInfoEx == 0)
         return "Os detection blocked";
 
    // Call GetNativeSystemInfo if supported or GetSystemInfo otherwise.

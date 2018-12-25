@@ -30,8 +30,10 @@
 class WindowsExplorerLoader : public PluginInterface_PluginLoader
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "first-world.info.ultracopier.PluginInterface.PluginLoader/1.0.0.0" FILE "plugin.json")
+    #ifndef ULTRACOPIER_PLUGIN_ALL_IN_ONE_DIRECT
+    Q_PLUGIN_METADATA(IID "first-world.info.ultracopier.PluginInterface.PluginLoader/1.2.4.0" FILE "plugin.json")
     Q_INTERFACES(PluginInterface_PluginLoader)
+    #endif
 public:
     WindowsExplorerLoader();
     ~WindowsExplorerLoader();
@@ -54,10 +56,11 @@ private:
     bool needBeRegistred;
     OptionInterface * optionsEngine;
     OptionsWidget *optionsWidget;
-    bool allDllIsImportant,Debug;
+    bool allDllIsImportant,allUserIsImportant,Debug;
     bool changeOfArchDetected,is64Bits;
 private slots:
     void setAllDllIsImportant(bool allDllIsImportant);
+    void setAllUserIsImportant(bool allDllIsImportant);
     void setDebug(bool Debug);
 };
 

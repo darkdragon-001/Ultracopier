@@ -115,6 +115,7 @@ void OptionDialog::onePluginAdded(const PluginsAvailable &plugin)
             addTheme(plugin);
         break;
         default:
+        case PluginType_Unknow:
             ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Warning,"category not found for: "+plugin.path);
     }
 }
@@ -143,14 +144,14 @@ void OptionDialog::onePluginWillBeRemoved(const PluginsAvailable &plugin)
             removeTheme(plugin);
         break;
         default:
+        case PluginType_Unknow:
             ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Warning,"category not found for: "+plugin.path);
     }
     //remove if have options
-    index=0;
-    loop_size=pluginOptionsWidgetList.size();
+    unsigned int index=0;
     if(plugin.category==PluginType_CopyEngine || plugin.category==PluginType_Listener || plugin.category==PluginType_PluginLoader || plugin.category==PluginType_SessionLoader)
     {
-        while(index<loop_size)
+        while(index<pluginOptionsWidgetList.size())
         {
             if(plugin.category==pluginOptionsWidgetList.at(index).category && plugin.name==pluginOptionsWidgetList.at(index).name)
             {
@@ -167,8 +168,7 @@ void OptionDialog::onePluginWillBeRemoved(const PluginsAvailable &plugin)
     }
     //remove from general list
     index=0;
-    loop_size=pluginLink.size();
-    while(index<loop_size)
+    while(index<pluginLink.size())
     {
         if(pluginLink.at(index).path==plugin.path)
         {
@@ -404,8 +404,8 @@ void OptionDialog::loadOption()
     newOptionValue("Ultracopier",	"confirmToGroupWindows",    OptionEngine::optionEngine->getOptionValue("Ultracopier","confirmToGroupWindows"));
     newOptionValue("Ultracopier",	"displayOSSpecific",		OptionEngine::optionEngine->getOptionValue("Ultracopier","displayOSSpecific"));
     newOptionValue("Ultracopier",	"checkTheUpdate",           OptionEngine::optionEngine->getOptionValue("Ultracopier","checkTheUpdate"));
-    newOptionValue("Ultracopier",	"giveGPUTime",              OptionEngine::optionEngine->getOptionValue("Ultracopier","giveGPUTime"));
     newOptionValue("Ultracopier",	"remainingTimeAlgorithm",   OptionEngine::optionEngine->getOptionValue("Ultracopier","remainingTimeAlgorithm"));
+    newOptionValue("Ultracopier",	"portable",                 OptionEngine::optionEngine->getOptionValue("Ultracopier","portable"));
     newOptionValue("Language",	"Language",                     OptionEngine::optionEngine->getOptionValue("Language","Language"));
     newOptionValue("Language",	"Language_force",               OptionEngine::optionEngine->getOptionValue("Language","Language_force"));
     #ifndef ULTRACOPIER_VERSION_PORTABLE
@@ -594,7 +594,12 @@ void OptionDialog::newOptionValue(const std::string &group,const std::string &na
             bool ok;
             const uint32_t &valueInt=stringtouint32(value,&ok);
             if(ok)
-                ui->remainingTimeAlgorithm->setCurrentIndex(valueInt);
+                ui->remainingTimeAlgorithm->setCurrentIndex(static_cast<int>(valueInt));
+        }
+        else if(name=="portable")
+        {
+            QString settingsFilePath=QString::fromStdString(ResourcesManager::resourcesManager->getWritablePath());
+            ui->portable->setChecked(QFile::exists(settingsFilePath+"/Ultracopier.conf"));
         }
     }
 }
@@ -607,9 +612,8 @@ void OptionDialog::on_Ultracopier_current_theme_currentIndexChanged(const int &i
                                  ", string value: "+ui->Ultracopier_current_theme->itemText(index).toStdString()+
                                  ", index: "+std::to_string(index));
         OptionEngine::optionEngine->setOptionValue("Themes","Ultracopier_current_theme",ui->Ultracopier_current_theme->itemData(index).toString().toStdString());
-        int index_loop=0;
-        loop_size=pluginOptionsWidgetList.size();
-        while(index_loop<loop_size)
+        unsigned int index_loop=0;
+        while(index_loop<pluginOptionsWidgetList.size())
         {
             if(pluginOptionsWidgetList.at(index_loop).name==ui->Ultracopier_current_theme->itemData(index).toString().toStdString())
             {
@@ -751,9 +755,8 @@ void OptionDialog::addPluginOptionWidget(const PluginType &category,const std::s
     //prevent send the empty options
     if(options!=NULL)
     {
-        index=0;
-        loop_size=pluginOptionsWidgetList.size();
-        while(index<loop_size)
+        unsigned int index=0;
+        while(index<pluginOptionsWidgetList.size())
         {
             if(pluginOptionsWidgetList.at(index).name==name)
             {
@@ -797,11 +800,11 @@ void OptionDialog::addPluginOptionWidget(const PluginType &category,const std::s
     if(category==PluginType_CopyEngine)
     {
         //but can loaded by the previous options
-        index=0;
-        loop_size=ui->CopyEngineList->count();
+        unsigned int index=0;
+        const unsigned int loop_size=static_cast<unsigned int>(ui->CopyEngineList->count());
         while(index<loop_size)
         {
-            if(ui->CopyEngineList->item(index)->text().toStdString()==name)
+            if(ui->CopyEngineList->item(static_cast<int>(index))->text().toStdString()==name)
                 break;
             index++;
         }
@@ -820,9 +823,8 @@ void OptionDialog::on_pluginList_itemSelectionChanged()
     else
     {
         treeWidgetItem=ui->pluginList->selectedItems().first();
-        index=0;
-        loop_size=pluginLink.size();
-        while(index<loop_size)
+        unsigned int index=0;
+        while(index<pluginLink.size())
         {
             if(pluginLink.at(index).item==treeWidgetItem)
             {
@@ -838,9 +840,8 @@ void OptionDialog::on_pluginList_itemSelectionChanged()
 void OptionDialog::on_pluginInformation_clicked()
 {
     treeWidgetItem=ui->pluginList->selectedItems().first();
-    index=0;
-    loop_size=pluginLink.size();
-    while(index<loop_size)
+    unsigned int index=0;
+    while(index<pluginLink.size())
     {
         if(pluginLink.at(index).item==treeWidgetItem)
         {
@@ -855,9 +856,8 @@ void OptionDialog::on_pluginInformation_clicked()
 void OptionDialog::on_pluginRemove_clicked()
 {
     treeWidgetItem=ui->pluginList->selectedItems().first();
-    index=0;
-    loop_size=pluginLink.size();
-    while(index<loop_size)
+    unsigned int index=0;
+    while(index<pluginLink.size())
     {
         if(pluginLink.at(index).item==treeWidgetItem)
         {
@@ -1011,12 +1011,6 @@ void OptionDialog::on_confirmToGroupWindows_clicked()
     OptionEngine::optionEngine->setOptionValue("Ultracopier","confirmToGroupWindows",booltostring(ui->confirmToGroupWindows->isChecked()));
 }
 
-void OptionDialog::on_giveGPUTime_clicked()
-{
-    ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"start");
-    OptionEngine::optionEngine->setOptionValue("Ultracopier","giveGPUTime",booltostring(ui->giveGPUTime->isChecked()));
-}
-
 void OptionDialog::on_remainingTimeAlgorithm_currentIndexChanged(int index)
 {
     if(allPluginsIsLoaded)
@@ -1024,4 +1018,21 @@ void OptionDialog::on_remainingTimeAlgorithm_currentIndexChanged(int index)
         ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"start");
         OptionEngine::optionEngine->setOptionValue("Ultracopier","remainingTimeAlgorithm",std::to_string(index));
     }
+}
+
+void OptionDialog::on_portable_toggled(bool)
+{
+    ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"start");
+    const bool portable=ui->portable->isChecked();
+    OptionEngine::optionEngine->setOptionValue("Ultracopier","portable",booltostring(portable));
+
+    QString settingsFilePath=QString::fromStdString(ResourcesManager::resourcesManager->getWritablePath());
+    if(portable)
+    {
+        QFile file(settingsFilePath+"/Ultracopier.conf");
+        file.open(QIODevice::ReadWrite);
+        file.close();
+    }
+    else
+        QFile::remove(settingsFilePath+"/Ultracopier.conf");
 }

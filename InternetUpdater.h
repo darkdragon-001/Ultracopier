@@ -16,13 +16,18 @@ class InternetUpdater : public QObject
     Q_OBJECT
 public:
     explicit InternetUpdater(QObject *parent = 0);
+    ~InternetUpdater();
+    void checkUpdate();
 signals:
     void newUpdate(const std::string &version) const;
+    void noNewUpdate() const;
 private:
     QTimer newUpdateTimer;
     QTimer firstUpdateTimer;
     QNetworkAccessManager qnam;
     QNetworkReply *reply;
+
+    void downloadFileInternal(const bool force=false);
 private slots:
     void downloadFile();
     void httpFinished();

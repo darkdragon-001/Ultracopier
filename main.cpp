@@ -14,6 +14,7 @@
 #include "ResourcesManager.h"
 #include "OptionEngine.h"
 #include "PluginsManager.h"
+#include "ProductKey.h"
 
 #ifndef ULTRACOPIER_PLUGIN_ALL_IN_ONE_DIRECT
 #ifdef ULTRACOPIER_PLUGIN_ALL_IN_ONE
@@ -38,6 +39,7 @@ OptionEngine *OptionEngine::optionEngine=NULL;
 PluginsManager *PluginsManager::pluginsManager=NULL;
 LanguagesManager *LanguagesManager::languagesManager=NULL;
 ThemesManager *ThemesManager::themesManager=NULL;
+ProductKey *ProductKey::productKey=NULL;
 
 void registerTheOptions()
 {
@@ -49,15 +51,13 @@ void registerTheOptions()
     //add the options hidden, will not show in options pannel
     KeysList.clear();
     KeysList.push_back(std::pair<std::string, std::string>("Last_version_used","na"));
-    #ifdef ULTRACOPIER_VERSION_ULTIMATE
     KeysList.push_back(std::pair<std::string, std::string>("key",""));
-    #endif
     KeysList.push_back(std::pair<std::string, std::string>("ActionOnManualOpen","1"));
     KeysList.push_back(std::pair<std::string, std::string>("GroupWindowWhen","0"));
     KeysList.push_back(std::pair<std::string, std::string>("displayOSSpecific","true"));
     KeysList.push_back(std::pair<std::string, std::string>("confirmToGroupWindows","true"));
-    KeysList.push_back(std::pair<std::string, std::string>("giveGPUTime","true"));
-    KeysList.push_back(std::pair<std::string, std::string>("remainingTimeAlgorithm","0"));
+    KeysList.push_back(std::pair<std::string, std::string>("remainingTimeAlgorithm","1"));
+    KeysList.push_back(std::pair<std::string, std::string>("portable","false"));
     #ifdef ULTRACOPIER_INTERNET_SUPPORT
     #if defined(Q_OS_WIN32) || defined(Q_OS_MAC)
     KeysList.push_back(std::pair<std::string, std::string>("checkTheUpdate","true"));
@@ -118,6 +118,7 @@ int main(int argc, char *argv[])
     PluginsManager::pluginsManager=new PluginsManager();
     LanguagesManager::languagesManager=new LanguagesManager();
     ThemesManager::themesManager=new ThemesManager();
+    ProductKey::productKey=new ProductKey();
 
     //the main code, event loop of Qt and event dispatcher of ultracopier
     {
@@ -128,6 +129,8 @@ int main(int argc, char *argv[])
             returnCode=ultracopierApplication.exec();
     }
 
+    delete ProductKey::productKey;
+    ProductKey::productKey=NULL;
     delete ThemesManager::themesManager;
     ThemesManager::themesManager=NULL;
     delete LanguagesManager::languagesManager;
