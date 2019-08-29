@@ -11,9 +11,13 @@ MOC_DIR     = $${DESTDIR}/.moc
 RCC_DIR     = $${DESTDIR}/.rcc
 UI_DIR      = $${DESTDIR}/.ui
 
+# see Variable.h (ULTRACOPIER_DEBUG) and plugins/***/Variable.h (ULTRACOPIER_PLUGIN_DEBUG)
 CONFIG(debug, debug|release) {
-    # possible options: ULTRACOPIER_DEBUG ULTRACOPIER_PLUGIN_DEBUG ULTRACOPIER_PLUGIN_DEBUG_WINDOW
-    DEFINES += ULTRACOPIER_DEBUG
+    #DEFINES += ULTRACOPIER_PLUGIN_DEBUG_WINDOW
+}
+CONFIG(release, debug|release) {
+    # NOTE Variable.h defines ULTRACOPIER_DEBUG if not ULTRACOPIER_NO_DEBUG is defined
+    DEFINES += ULTRACOPIER_NO_DEBUG
 }
 
 # other setup
@@ -29,9 +33,6 @@ RESOURCES += $$PWD/plugins/static-plugins.qrc \
     $$PWD/plugins/Themes/Oxygen2/interfaceResources.qrc
 
 win32:RESOURCES += $$PWD/plugins/static-plugins-windows.qrc
-
-HEADERS -= $$PWD/AuthPlugin.h
-SOURCES -= $$PWD/AuthPlugin.cpp
 
 RESOURCES -= $$PWD/resources/resources-windows-qt-plugin.qrc
 

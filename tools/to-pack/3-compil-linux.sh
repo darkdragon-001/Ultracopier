@@ -2,8 +2,8 @@
 #
 # NOTE Currently this script *must* be run from the project root folder!
 #
-# Usage: 3-compile-linux.sh BUILD_PATH DEBUG ULTIMATE
-# Example: 3-compile-linux.sh "./build" "./package" 0 1
+# Usage: 3-compile-linux.sh BUILD_PATH DEBUG
+# Example: 3-compile-linux.sh "./build" "./package" 0
 
 # TODO portable, bits, custom flags (qmake, make), static
 # TODO change Variables.h -> compile definitions (maintain plugin specific settings!)
@@ -12,7 +12,7 @@
 # TODO add option for architecture -> merge with windows/mac
 # TODO add option to control log and console output
 #      (tee, redirect /dev/std{out,err} /dev/null)
-# TODO maintain plugins-alternative
+# TODO maintain plugins-unmaintained
 # TODO allow project directory different from "."
 function compile {
   # set options
@@ -20,10 +20,9 @@ function compile {
   BUILD_DIR=${1}
   PACKAGE_DIR=${2}
   DEBUG=${3}
-  ULTIMATE=${4}
   LOGPATH="/tmp"
-  LOGFILE="${LOGPATH}/stdout.log"
-  LOGERROR="${LOGPATH}/stderr.log"
+  LOGFILE="${LOGPATH}/stdout.log"   # /dev/stdout
+  LOGERROR="${LOGPATH}/stderr.log"  # /dev/stderr
   MAKE_FLAGS="-j8"
 
   # build arguments
@@ -35,9 +34,6 @@ function compile {
     args+=" CONFIG+=debug"
   else
     args+=" CONFIG+=release"
-  fi
-  if [ $ULTIMATE -eq 1 ]; then
-    args+=" DEFINES+=\"ULTRACOPIER_VERSION_ULTIMATE\""
   fi
 
   # do the work
@@ -62,7 +58,7 @@ function _compile {
   find . -name "informations.xml" -exec sed -i -r "s;<architecture>.*</architecture>;<architecture>linux-x86_64-pc</architecture>;g" {} \;
 
   # version
-  export ULTRACOPIER_VERSION=$(grep "ULTRACOPIER_VERSION[^_]" Variable.h | sed 's/^#define\s\{1,\}ULTRACOPIER_VERSION\s\{1,\}"\([0-9]\{1,3\}\)\.\([0-9]\{1,3\}\)\.\([0-9]\{1,3\}\)\.\([0-9]\{1,3\}\)".*$/\1.\2.\3.\4/')
+  export ULTRACOPIER_VERSION=$(grep "ULTRACOPIER_VERSION" Version.h | sed 's/^#define\s\{1,\}ULTRACOPIER_VERSION\s\{1,\}"\([0-9]\{1,3\}\)\.\([0-9]\{1,3\}\)\.\([0-9]\{1,3\}\)\.\([0-9]\{1,3\}\)".*$/\1.\2.\3.\4/')
   # release
   if [ $DEBUG -ne 1 ]; then
     # TODO allow plugin verions different from core version
@@ -129,11 +125,12 @@ function _compile {
       return $?
     }
     # add all plugin projects
+    # NOTE ERROR "mv: 'libinterface.so' and './libinterface.so' are the same file" is because build_project() runs qmake DESTDIR="."
     # TODO parallel: subshell ()& + wait
     #SHOPT_OLD=$(shopt -p globstar)  # NOTE alternatively save and restore $SHELLOPTS $BASHOPTS
     #shopt -s globstar
     #for plugin in ./plugins/{,**/}*.pro; do
-    #for plugin in ./plugins{,-alternative}/{,**/}*.pro; do  # include non-maintained plugins
+    #for plugin in ./plugins{,-unmaintained}/{,**/}*.pro; do  # include non-maintained plugins
     #  if [ "$(basename $plugin)" == '*.pro' ]; then
     #    continue
     #  fi
@@ -141,19 +138,22 @@ function _compile {
     #done
     #eval $SHOPT_OLD
     # selectively add projects
-    build_plugin "${args}" "${BUILD_DIR}" "./plugins/CopyEngine/Ultracopier/CopyEngine.pro" #ALL-IN-ONE
-    build_plugin "${args}" "${BUILD_DIR}" "./plugins/CopyEngine/Rsync/Rsync.pro"
+    build_plugin "${args}" "${BUILD_DIR}" "./plugins/CopyEngine/Random/CopyEngine.pro"
+    build_plugin "${args}" "${BUILD_DIR}" "./plugins/CopyEngine/Rsync/CopyEngine.pro"
+    build_plugin "${args}" "${BUILD_DIR}" "./plugins/CopyEngine/Ultracopier/CopyEngine.pro"
+    build_plugin "${args}" "${BUILD_DIR}" "./plugins/CopyEngine/Ultracopier-Spec/CopyEngine.pro" #ALL-IN-ONE
     build_plugin "${args}" "${BUILD_DIR}" "./plugins/Listener/catchcopy-v0002/listener.pro" #ALL-IN-ONE
     build_plugin "${args}" "${BUILD_DIR}" "./plugins/PluginLoader/catchcopy-v0002/pluginLoader.pro"
     build_plugin "${args}" "${BUILD_DIR}" "./plugins/SessionLoader/Windows/sessionLoader.pro"
-    build_plugin "${args}" "${BUILD_DIR}" "./plugins/Themes/Oxygen/interface.pro" #ALL-IN-ONE
+    build_plugin "${args}" "${BUILD_DIR}" "./plugins/Themes/Oxygen/interface.pro"
+    build_plugin "${args}" "${BUILD_DIR}" "./plugins/Themes/Oxygen2/interface.pro" #ALL-IN-ONE
     build_plugin "${args}" "${BUILD_DIR}" "./plugins/Themes/Supercopier/interface.pro"
-    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-alternative/Listener/dbus/listener.pro"
-    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-alternative/PluginLoader/keybinding/pluginLoader.pro"
-    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-alternative/SessionLoader/KDE4/sessionLoader.pro"
-    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-alternative/Themes/Clean/interface.pro"
-    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-alternative/Themes/Teracopy/interface.pro"
-    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-alternative/Themes/Windows/interface.pro"
+    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-unmaintained/Listener/dbus/listener.pro"
+    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-unmaintained/PluginLoader/keybinding/pluginLoader.pro"
+    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-unmaintained/SessionLoader/KDE4/sessionLoader.pro"
+    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-unmaintained/Themes/Clean/interface.pro"
+    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-unmaintained/Themes/Teracopy/interface.pro"
+    #build_plugin "${args}" "${BUILD_DIR}" "./plugins-unmaintained/Themes/Windows/interface.pro"
 
     ## package (to build)
     # TODO only when everything before successful!
@@ -170,6 +170,7 @@ function _compile {
     cp "./resources/ultracopier.desktop" "${PACKAGE_DIR}/"
     ### languages
     echo "... languages ..."
+    # TODO auto detect languages
     LANGUAGES="ar de el es fr hi hu id it ja ko nl no pl pt ru th tr zh" # default: en
     function package_languages {
       langs_src="${1}/Languages"
@@ -205,20 +206,24 @@ function _compile {
       PLUGIN_RELEASE_DST="${PACKAGE_DIR}/${PLUGIN_PATH}"
       PLUGIN_LIB_NAME="${3}" # TODO naming convention --> based on PLUGIN_TYPE
       LANGUAGES="${4}" # TODO language auto detection
+      echo "  - $PLUGIN_NAME"
       mkdir -p "${PLUGIN_RELEASE_DST}"
       cp "${PLUGIN_SRC}/informations.xml"            "${PLUGIN_RELEASE_DST}"
       cp "${PLUGIN_BUILD_SRC}/${PLUGIN_LIB_NAME}.so" "${PLUGIN_RELEASE_DST}"
       package_plugin_languages "${PLUGIN_SRC}" "${PLUGIN_RELEASE_DST}" "${LANGUAGES}" "${LANGUAGES}"
     }
-    package_plugin "CopyEngine"    "Ultracopier"     "libcopyEngine"    "${LANGUAGES}"
-    package_plugin "CopyEngine"    "Rsync"           "libcopyEngine"    ""
+    package_plugin "CopyEngine"    "Ultracopier-Spec" "libcopyEngine"    "${LANGUAGES}"
+    package_plugin "CopyEngine"    "Random"           "libcopyEngine"    ""
+    package_plugin "CopyEngine"    "Ultracopier"      "libcopyEngine"    "${LANGUAGES}"
+    package_plugin "CopyEngine"    "Rsync"            "libcopyEngine"    ""
     cp -r "${PACKAGE_DIR}/CopyEngine/Ultracopier/Languages" "${PACKAGE_DIR}/CopyEngine/Rsync/Languages" # NOTE inline code switches are used # TODO separate them completly!
-    package_plugin "Listener"      "catchcopy-v0002" "liblistener"      ""
-    #package_plugin "PluginLoader"  "catchcopy-v0002" "libpluginLoader"  "${LANGUAGES}" # NOTE Windows only
-    #package_plugin "SessionLoader" "KDE4"            "libsessionLoader" ""
-    #package_plugin "SessionLoader" "Windows"         "libsessionLoader" "" # NOTE Windows only
-    package_plugin "Themes"        "Oxygen"          "libinterface"     "${LANGUAGES}"
-    package_plugin "Themes"        "Supercopier"     "libinterface"     ""
+    package_plugin "Listener"      "catchcopy-v0002"  "liblistener"      ""
+    #package_plugin "PluginLoader"  "catchcopy-v0002"  "libpluginLoader"  "${LANGUAGES}" # NOTE Windows only
+    #package_plugin "SessionLoader" "KDE4"             "libsessionLoader" ""
+    #package_plugin "SessionLoader" "Windows"          "libsessionLoader" "" # NOTE Windows only
+    package_plugin "Themes"        "Oxygen"           "libinterface"     "${LANGUAGES}"
+    package_plugin "Themes"        "Oxygen2"          "libinterface"     "${LANGUAGES}"
+    package_plugin "Themes"        "Supercopier"      "libinterface"     ""
 
     echo "... done!"
   fi
