@@ -1809,6 +1809,51 @@ da: %2</translation>
     </message>
 </context>
 <context>
+    <name>QXzDecode</name>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="38"/>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="93"/>
+        <source>Memory allocation failed</source>
+        <translation>Allocazione di memoria fallita</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="64"/>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="82"/>
+        <source>Write error</source>
+        <translation>Errore di scrittura</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="97"/>
+        <source>Memory usage limit reached</source>
+        <translation>Limite di memoria raggiunto</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="101"/>
+        <source>Not a .xz file</source>
+        <translation>Non è un file .xz</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="105"/>
+        <source>Unsupported options in the .xz headers</source>
+        <translation>Opzioni non supportate nelle intestazioni .xz</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="110"/>
+        <source>The file is corrupted</source>
+        <translation>Il file è corrotto</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="114"/>
+        <source>Bug!</source>
+        <translation>Bug!</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="124"/>
+        <source>The input data is too short</source>
+        <translation>I dati inseriti sono troppo pochi</translation>
+    </message>
+</context>
+<context>
     <name>RadialMap::Widget</name>
     <message>
         <location filename="../../Themes/Oxygen2/radialMap/widgetEvents.cpp" line="194"/>

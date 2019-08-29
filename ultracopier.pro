@@ -34,6 +34,21 @@ RESOURCES += $$PWD/plugins/static-plugins.qrc \
 
 win32:RESOURCES += $$PWD/plugins/static-plugins-windows.qrc
 
+HEADERS -= $$PWD/lib/qt-tar-xz/xz.h \
+    $$PWD/lib/qt-tar-xz/QXzDecodeThread.h \
+    $$PWD/lib/qt-tar-xz/QXzDecode.h \
+    $$PWD/lib/qt-tar-xz/QTarDecode.h \
+    $$PWD/AuthPlugin.h
+SOURCES -= $$PWD/lib/qt-tar-xz/QXzDecodeThread.cpp \
+    $$PWD/lib/qt-tar-xz/QXzDecode.cpp \
+    $$PWD/lib/qt-tar-xz/QTarDecode.cpp \
+    $$PWD/lib/qt-tar-xz/xz_crc32.c \
+    $$PWD/lib/qt-tar-xz/xz_dec_stream.c \
+    $$PWD/lib/qt-tar-xz/xz_dec_lzma2.c \
+    $$PWD/lib/qt-tar-xz/xz_dec_bcj.c \
+    $$PWD/AuthPlugin.cpp
+INCLUDEPATH -= $$PWD/lib/qt-tar-xz/
+
 RESOURCES -= $$PWD/resources/resources-windows-qt-plugin.qrc
 
 DEFINES += ULTRACOPIER_PLUGIN_ALL_IN_ONE

@@ -1803,6 +1803,51 @@ desde: %2</translation>
     </message>
 </context>
 <context>
+    <name>QXzDecode</name>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="38"/>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="93"/>
+        <source>Memory allocation failed</source>
+        <translation>La asignación de memoria no</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="64"/>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="82"/>
+        <source>Write error</source>
+        <translation>Error de escritura</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="97"/>
+        <source>Memory usage limit reached</source>
+        <translation>Limitar el uso de la memoria alcanza</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="101"/>
+        <source>Not a .xz file</source>
+        <translation>No es un. Xz archivo</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="105"/>
+        <source>Unsupported options in the .xz headers</source>
+        <translation>Opciones no admitidas en los encabezados. Xz</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="110"/>
+        <source>The file is corrupted</source>
+        <translation>El archivo está dañado</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="114"/>
+        <source>Bug!</source>
+        <translation>Bug!</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="124"/>
+        <source>The input data is too short</source>
+        <translation>Los datos de entrada es demasiado corto</translation>
+    </message>
+</context>
+<context>
     <name>RadialMap::Widget</name>
     <message>
         <location filename="../../Themes/Oxygen2/radialMap/widgetEvents.cpp" line="194"/>

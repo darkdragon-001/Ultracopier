@@ -93,6 +93,10 @@ HEADERS += $$PWD/../ResourcesManager.h \
     $$PWD/../LanguagesManager.h \
     $$PWD/../DebugEngineMacro.h \
     $$PWD/../PluginInformation.h \
+    $$PWD/../lib/qt-tar-xz/xz.h \
+    $$PWD/../lib/qt-tar-xz/QXzDecodeThread.h \
+    $$PWD/../lib/qt-tar-xz/QXzDecode.h \
+    $$PWD/../lib/qt-tar-xz/QTarDecode.h \
     $$PWD/../SessionLoader.h \
     $$PWD/../ExtraSocket.h \
     $$PWD/../CopyListener.h \
@@ -131,6 +135,13 @@ SOURCES += $$PWD/../ThemesManager.cpp \
     $$PWD/../PluginsManager.cpp \
     $$PWD/../LanguagesManager.cpp \
     $$PWD/../PluginInformation.cpp \
+    $$PWD/../lib/qt-tar-xz/QXzDecodeThread.cpp \
+    $$PWD/../lib/qt-tar-xz/QXzDecode.cpp \
+    $$PWD/../lib/qt-tar-xz/QTarDecode.cpp \
+    $$PWD/../lib/qt-tar-xz/xz_crc32.c \
+    $$PWD/../lib/qt-tar-xz/xz_dec_stream.c \
+    $$PWD/../lib/qt-tar-xz/xz_dec_lzma2.c \
+    $$PWD/../lib/qt-tar-xz/xz_dec_bcj.c \
     $$PWD/../SessionLoader.cpp \
     $$PWD/../ExtraSocket.cpp \
     $$PWD/../CopyListener.cpp \
@@ -150,6 +161,8 @@ SOURCES += $$PWD/../ThemesManager.cpp \
     $$PWD/../InternetUpdater.cpp \
     $$PWD/../cpp11additionstringtointcpp.cpp \
     $$PWD/../ProductKey.cpp
+INCLUDEPATH += \
+    $$PWD/../lib/qt-tar-xz/
 
 OTHER_FILES += $$PWD/../resources/resources-windows.rc
 

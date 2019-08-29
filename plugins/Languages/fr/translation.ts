@@ -1805,6 +1805,51 @@ depuis:%2</translation>
     </message>
 </context>
 <context>
+    <name>QXzDecode</name>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="38"/>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="93"/>
+        <source>Memory allocation failed</source>
+        <translation>Allocation mémoire échouée</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="64"/>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="82"/>
+        <source>Write error</source>
+        <translation>Erreur d&apos;écriture</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="97"/>
+        <source>Memory usage limit reached</source>
+        <translation>Limite de mémoire atteinte</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="101"/>
+        <source>Not a .xz file</source>
+        <translation>N&apos;est pas un fichier .xz</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="105"/>
+        <source>Unsupported options in the .xz headers</source>
+        <translation>Options non supportées dans les entêtes des fichiers .xz</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="110"/>
+        <source>The file is corrupted</source>
+        <translation>Le fichier est corrompu</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="114"/>
+        <source>Bug!</source>
+        <translation>Bug!</translation>
+    </message>
+    <message>
+        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="124"/>
+        <source>The input data is too short</source>
+        <translation>Données d&apos;entrée trop courtes</translation>
+    </message>
+</context>
+<context>
     <name>RadialMap::Widget</name>
     <message>
         <location filename="../../Themes/Oxygen2/radialMap/widgetEvents.cpp" line="194"/>
