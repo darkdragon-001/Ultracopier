@@ -1801,51 +1801,6 @@ since:%2</source>
     </message>
 </context>
 <context>
-    <name>QXzDecode</name>
-    <message>
-        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="38"/>
-        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="93"/>
-        <source>Memory allocation failed</source>
-        <translation>Memória allokáció sikertelen</translation>
-    </message>
-    <message>
-        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="64"/>
-        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="82"/>
-        <source>Write error</source>
-        <translation>Írási hiba</translation>
-    </message>
-    <message>
-        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="97"/>
-        <source>Memory usage limit reached</source>
-        <translation>Memóriahasználat határ elérve</translation>
-    </message>
-    <message>
-        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="101"/>
-        <source>Not a .xz file</source>
-        <translation>Nem .xz fájl</translation>
-    </message>
-    <message>
-        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="105"/>
-        <source>Unsupported options in the .xz headers</source>
-        <translation>Nem támogatott beállítások az .xz fejlécben</translation>
-    </message>
-    <message>
-        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="110"/>
-        <source>The file is corrupted</source>
-        <translation>A fájl hibás</translation>
-    </message>
-    <message>
-        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="114"/>
-        <source>Bug!</source>
-        <translation>Hiba!</translation>
-    </message>
-    <message>
-        <location filename="../../../lib/qt-tar-xz/QXzDecode.cpp" line="124"/>
-        <source>The input data is too short</source>
-        <translation>A bemenő adat túl rövid</translation>
-    </message>
-</context>
-<context>
     <name>RadialMap::Widget</name>
     <message>
         <location filename="../../Themes/Oxygen2/radialMap/widgetEvents.cpp" line="194"/>
