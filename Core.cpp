@@ -22,6 +22,9 @@ Core::Core(CopyEngineManager *copyEngineList)
     connect(ThemesManager::themesManager,			&ThemesManager::theThemeNeedBeUnloaded,				this,	&Core::unloadInterface);
     connect(ThemesManager::themesManager,			&ThemesManager::theThemeIsReloaded,				this,	&Core::loadInterface, Qt::QueuedConnection);
     connect(&forUpateInformation,	&QTimer::timeout,						this,	&Core::periodicSynchronization);
+    #ifndef NOAUDIO
+    audio=nullptr;
+    #endif
 }
 
 Core::~Core()
@@ -35,6 +38,13 @@ Core::~Core()
         delete copyList.at(index).engine;
         index++;
     }
+    #ifndef NOAUDIO
+    if(audio!=nullptr)
+    {
+        audio->stop();
+        delete audio;
+    }
+    #endif
 }
 
 void Core::newCopyWithoutDestination(const uint32_t &orderId,const std::vector<std::string> &protocolsUsedForTheSources,const std::vector<std::string> &sources)
@@ -355,6 +365,7 @@ int Core::connectCopyEngine(const Ultracopier::CopyMode &mode,bool ignoreMode,co
             newItem.action=Ultracopier::Idle;
             newItem.lastProgression=0;//store the real byte transfered, used in time remaining calculation
             newItem.isPaused=false;
+            newItem.havePause=returnInformations.havePause;
             newItem.isRunning=false;
             newItem.haveError=false;
             newItem.lastConditionalSync.start();
@@ -461,7 +472,7 @@ void Core::doneTime(const std::vector<std::pair<uint64_t,uint32_t> > &timeList)
         {
             case Ultracopier::RemainingTimeAlgo_Logarithmic:
             if(copyInstance.remainingTimeLogarithmicValue.size()<ULTRACOPIER_MAXREMAININGTIMECOL)
-                ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"bug, copyInstance.remainingTimeLogarithmicValue.size() "+std::to_string(copyInstance.remainingTimeLogarithmicValue.size())+" <ULTRACOPIER_MAXREMAININGTIMECOL");
+                ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Critical,"bug, copyInstance.remainingTimeLogarithmicValue.size() "+std::to_string(copyInstance.remainingTimeLogarithmicValue.size())+" <ULTRACOPIER_MAXREMAININGTIMECOL");
             else
             {
                 unsigned int sub_index=0;
@@ -472,7 +483,7 @@ void Core::doneTime(const std::vector<std::pair<uint64_t,uint32_t> > &timeList)
                     RemainingTimeLogarithmicColumn &remainingTimeLogarithmicColumn=copyInstance.remainingTimeLogarithmicValue[col];
                     if(copyInstance.remainingTimeLogarithmicValue.size()<=col)
                     {
-                        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"bug, copyInstance.remainingTimeLogarithmicValue.size() "+std::to_string(copyInstance.remainingTimeLogarithmicValue.size())+" < col %2"+std::to_string(col));
+                        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Critical,"bug, copyInstance.remainingTimeLogarithmicValue.size() "+std::to_string(copyInstance.remainingTimeLogarithmicValue.size())+" < col %2"+std::to_string(col));
                         break;
                     }
                     else
@@ -481,7 +492,7 @@ void Core::doneTime(const std::vector<std::pair<uint64_t,uint32_t> > &timeList)
                         {
                             remainingTimeLogarithmicColumn.lastProgressionSpeed.push_back(static_cast<unsigned int>(timeUnit.first/timeUnit.second));
                             if(remainingTimeLogarithmicColumn.lastProgressionSpeed.size()>ULTRACOPIER_MAXVALUESPEEDSTORED)
-                                remainingTimeLogarithmicColumn.lastProgressionSpeed.pop_back();
+                                remainingTimeLogarithmicColumn.lastProgressionSpeed.erase(remainingTimeLogarithmicColumn.lastProgressionSpeed.begin());
                         }
                     }
                     sub_index++;
@@ -536,6 +547,25 @@ void Core::actionInProgess(const Ultracopier::EngineActionInProgress &action)
             copyList[index].orderId.clear();
             resetSpeedDetected(index);
         }
+        #ifndef NOAUDIO
+        if(action==Ultracopier::Idle)
+            if(!stringtobool(OptionEngine::optionEngine->getOptionValue("Ultracopier","soundWhenFinish")))
+            {
+                const std::string newSoundFile=OptionEngine::optionEngine->getOptionValue("Ultracopier","soundFile");
+                if(newSoundFile!=soundFile)
+                {
+                    if(audio!=nullptr)
+                        delete audio;
+                    audio=static_cast<QAudioOutput *>(FacilityEngine::facilityEngine.prepareOpusAudio(newSoundFile,buffer));
+                    soundFile=newSoundFile;
+                }
+                if(audio!=nullptr)
+                {
+                    buffer.seek(0);
+                    audio->start(&buffer);
+                }
+            }
+        #endif
     }
     else
         ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Warning,"unable to locate the interface sender");
@@ -702,14 +732,17 @@ void Core::connectInterfaceAndSync(const unsigned int &index)
         ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Critical,"error at connect, the interface can not work correctly: "+std::to_string(index)+": "+std::to_string((uint64_t)sender())+" for pushGeneralProgression()");
     if(!connect(currentCopyInstance.engine,&PluginInterface_CopyEngine::pushGeneralProgression,		this,&Core::pushGeneralProgression,		Qt::QueuedConnection))
         ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Critical,"error at connect, the interface can not work correctly: "+std::to_string(index)+": "+std::to_string((uint64_t)sender())+" for pushGeneralProgression() for this");
-    if(!connect(currentCopyInstance.engine,&PluginInterface_CopyEngine::errorToRetry,		currentCopyInstance.interface,&PluginInterface_Themes::errorToRetry,		Qt::QueuedConnection))
+    if(!connect(currentCopyInstance.engine,&PluginInterface_CopyEngine::errorToRetry,               currentCopyInstance.interface,&PluginInterface_Themes::errorToRetry,		Qt::QueuedConnection))
         ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Critical,"error at connect, the interface can not work correctly: "+std::to_string(index)+": "+std::to_string((uint64_t)sender())+" for errorToRetry() for this");
+    if(!connect(currentCopyInstance.engine,&PluginInterface_CopyEngine::doneTime,					currentCopyInstance.interface,&PluginInterface_Themes::doneTime,Qt::QueuedConnection))
+        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Critical,"error at connect, the engine can not work correctly: "+std::to_string(index)+": "+std::to_string((uint64_t)sender())+" for doneTime()");
 
     currentCopyInstance.interface->setSupportSpeedLimitation(currentCopyInstance.engine->supportSpeedLimitation());
     currentCopyInstance.interface->setCopyType(currentCopyInstance.type);
     currentCopyInstance.interface->setTransferListOperation(currentCopyInstance.transferListOperation);
     currentCopyInstance.interface->actionInProgess(currentCopyInstance.action);
     currentCopyInstance.interface->isInPause(currentCopyInstance.isPaused);
+    currentCopyInstance.interface->havePause(currentCopyInstance.havePause);
     if(currentCopyInstance.haveError)
         currentCopyInstance.interface->errorDetected();
     QWidget *tempWidget=currentCopyInstance.interface->getOptionsEngineWidget();
@@ -848,8 +881,12 @@ void Core::periodicSynchronizationWithIndex(const int &index)
                                         average_speed+=remainingTimeLogarithmicColumn.lastProgressionSpeed.at(temp_loop_index);
                                         temp_loop_index++;
                                     }
-                                    average_speed/=remainingTimeLogarithmicColumn.lastProgressionSpeed.size();
-                                    remainingTimeValue+=remainingSize/average_speed;
+                                    if(!remainingTimeLogarithmicColumn.lastProgressionSpeed.empty())
+                                    {
+                                        average_speed/=remainingTimeLogarithmicColumn.lastProgressionSpeed.size();
+                                        if(average_speed!=0)
+                                            remainingTimeValue+=remainingSize/average_speed;
+                                    }
                                 }
                                 //fallback
                                 else
@@ -860,7 +897,10 @@ void Core::periodicSynchronizationWithIndex(const int &index)
                                         if(currentCopyInstance.totalProgression==0 || currentCopyInstance.currentProgression==0)
                                             remainingTimeValue+=1;
                                         else if((currentCopyInstance.totalProgression-currentCopyInstance.currentProgression)>1024)
-                                            remainingTimeValue+=remainingSize/totAverageSpeed;
+                                        {
+                                            if(totAverageSpeed!=0)
+                                                remainingTimeValue+=remainingSize/totAverageSpeed;
+                                        }
                                     }
                                     else
                                         remainingTimeValue+=1;

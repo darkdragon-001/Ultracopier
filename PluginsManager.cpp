@@ -310,8 +310,9 @@ void PluginsManager::loadPluginXml(PluginsAvailable * thePlugin,const QByteArray
                         loadBalise(root,"architecture",&(thePlugin->informations),&(thePlugin->errorString),true,false);
                         if(thePlugin->errorString.empty())
                         {
-                            if(thePlugin->informations.back().back()!=ULTRACOPIER_PLATFORM_CODE)
-                                thePlugin->errorString="Wrong platform code: "+thePlugin->informations.back().back();
+                            const std::string &platform=thePlugin->informations.back().back();
+                            if(platform!=ULTRACOPIER_PLATFORM_CODE)
+                                thePlugin->errorString="Wrong platform code: "+platform+std::string(" should be ")+ULTRACOPIER_PLATFORM_CODE;
                         }
                         #endif
                     }
@@ -528,10 +529,10 @@ std::string PluginsManager::getPluginVersion(const std::string &pluginName) cons
 {
     #ifdef ULTRACOPIER_MODE_SUPERCOPIER
      if(pluginName=="supercopier")
-         return ULTRACOPIER_VERSION;
+         return FacilityEngine::version();
      #else
       if(pluginName=="ultracopier")
-          return ULTRACOPIER_VERSION;
+          return FacilityEngine::version();
      #endif
     ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"start");
     unsigned int index=0;
@@ -907,7 +908,7 @@ void PluginsManager::newAuthPath(const std::string &path)
 /// \brief transfor short plugin name into file name
 std::string PluginsManager::getResolvedPluginName(const std::string &name)
 {
-    #if defined(Q_OS_LINUX) || defined(Q_OS_HURD)
+    #if defined(Q_OS_LINUX) || defined(Q_OS_HURD) || defined(__HAIKU__)
         return "lib"+name+".so";
     #elif defined(Q_OS_MAC)
         #if defined(QT_DEBUG)
@@ -922,7 +923,11 @@ std::string PluginsManager::getResolvedPluginName(const std::string &name)
             return name+".dll";
         #endif
     #else
+        #ifndef ULTRACOPIER_PLUGIN_ALL_IN_ONE
         #error "Platform not supported"
+        #else
+        return std::string();
+        #endif
     #endif
 }
 

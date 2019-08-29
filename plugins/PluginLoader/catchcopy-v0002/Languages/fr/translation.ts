@@ -13,5 +13,10 @@
         <source>All the dlls are importants</source>
         <translation>Toutes les dlls sont importantes</translation>
     </message>
+    <message>
+        <location filename="../../OptionsWidget.ui" line="34"/>
+        <source>Register for all users</source>
+        <translation>Enregistrer pour tous les utilisateurs</translation>
+    </message>
 </context>
 </TS>

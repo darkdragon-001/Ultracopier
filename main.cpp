@@ -54,10 +54,12 @@ void registerTheOptions()
     KeysList.push_back(std::pair<std::string, std::string>("key",""));
     KeysList.push_back(std::pair<std::string, std::string>("ActionOnManualOpen","1"));
     KeysList.push_back(std::pair<std::string, std::string>("GroupWindowWhen","0"));
-    KeysList.push_back(std::pair<std::string, std::string>("displayOSSpecific","true"));
+    KeysList.push_back(std::pair<std::string, std::string>("displayOSSpecific2","true"));
     KeysList.push_back(std::pair<std::string, std::string>("confirmToGroupWindows","true"));
     KeysList.push_back(std::pair<std::string, std::string>("remainingTimeAlgorithm","1"));
     KeysList.push_back(std::pair<std::string, std::string>("portable","false"));
+    KeysList.push_back(std::pair<std::string, std::string>("soundFile","finish.opus"));
+    KeysList.push_back(std::pair<std::string, std::string>("soundWhenFinish","false"));
     #ifdef ULTRACOPIER_INTERNET_SUPPORT
     #if defined(Q_OS_WIN32) || defined(Q_OS_MAC)
     KeysList.push_back(std::pair<std::string, std::string>("checkTheUpdate","true"));
@@ -68,7 +70,7 @@ void registerTheOptions()
     OptionEngine::optionEngine->addOptionGroup("Ultracopier",KeysList);
 
     KeysList.clear();
-    KeysList.push_back(std::pair<std::string, std::string>("List","Ultracopier"));
+    KeysList.push_back(std::pair<std::string, std::string>("List","Ultracopier-Spec"));
     OptionEngine::optionEngine->addOptionGroup("CopyEngine",KeysList);
 
     //load the GUI option
@@ -101,7 +103,7 @@ int main(int argc, char *argv[])
 {
     int returnCode;
     QApplication ultracopierApplication(argc, argv);
-    ultracopierApplication.setApplicationVersion(ULTRACOPIER_VERSION);
+    ultracopierApplication.setApplicationVersion(QString::fromStdString(FacilityEngine::version()));
     ultracopierApplication.setQuitOnLastWindowClosed(false);
     qRegisterMetaType<PluginsAvailable>("PluginsAvailable");
     qRegisterMetaType<Ultracopier::DebugLevel>("Ultracopier::DebugLevel");

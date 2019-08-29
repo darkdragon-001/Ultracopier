@@ -10,7 +10,7 @@
 #include "cpp11addition.h"
 
 #ifdef ULTRACOPIER_PLUGIN_ALL_IN_ONE_DIRECT
-#include "plugins/CopyEngine/Ultracopier/CopyEngineFactory.h"
+#include "plugins/CopyEngine/Ultracopier-Spec/CopyEngineFactory.h"
 #endif
 
 CopyEngineManager::CopyEngineManager(OptionDialog *optionDialog)
@@ -221,6 +221,7 @@ CopyEngineManager::returnCopyEngine CopyEngineManager::getCopyEngine(const Ultra
             pluginList[index].intances.push_back(pluginList.at(index).factory->getInstance());
             temp.engine=pluginList.at(index).intances.back();
             temp.canDoOnlyCopy=pluginList.at(index).canDoOnlyCopy;
+            temp.havePause=pluginList.at(index).factory->havePause();
             temp.type=pluginList.at(index).type;
             temp.transferListOperation=pluginList.at(index).transferListOperation;
             return temp;
@@ -262,10 +263,13 @@ CopyEngineManager::returnCopyEngine CopyEngineManager::getCopyEngine(const Ultra
                 temp.engine=NULL;
                 return temp;
             }
-            pluginList[index].intances.push_back(pluginList.at(index).factory->getInstance());
+            PluginInterface_CopyEngineFactory * factory=pluginList.at(index).factory;
+            PluginInterface_CopyEngine * newIntance=factory->getInstance();
+            pluginList[index].intances.push_back(newIntance);
             temp.engine=pluginList.at(index).intances.back();
             temp.canDoOnlyCopy=pluginList.at(index).canDoOnlyCopy;
             temp.type=pluginList.at(index).type;
+            temp.havePause=factory->havePause();
             temp.transferListOperation=pluginList.at(index).transferListOperation;
             return temp;
         }

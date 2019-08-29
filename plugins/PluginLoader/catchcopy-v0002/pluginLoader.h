@@ -38,19 +38,19 @@ public:
     WindowsExplorerLoader();
     ~WindowsExplorerLoader();
     /// \brief try enable/disable the catching
-    void setEnabled(const bool &needBeRegistred);
+    void setEnabled(const bool &needBeRegistred) override;
     /// \brief to set resources, writePath can be empty if read only mode
-    void setResources(OptionInterface * options,const std::string &writePath,const std::string &pluginPath,const bool &portableVersion);
+    void setResources(OptionInterface * options,const std::string &writePath,const std::string &pluginPath,const bool &portableVersion) override;
     /// \brief to get the options widget, NULL if not have
-    QWidget * options();
+    QWidget * options() override;
 public slots:
     /// \brief to reload the translation, because the new language have been loaded
-    void newLanguageLoaded();
+    void newLanguageLoaded() override;
 private:
     std::string pluginPath;
     std::vector<std::string> importantDll,secondDll;
     std::unordered_set<std::string> correctlyLoaded;
-    bool RegisterShellExtDll(const std::string &dllPath, const bool &bRegister,const bool &quiet);
+    bool RegisterShellExtDll(std::string dllPath, const bool &bRegister, const bool &quiet);
     bool checkExistsDll();
     bool dllChecked;
     bool needBeRegistred;

@@ -27,8 +27,8 @@ OptionDialog::OptionDialog() :
     oSSpecific=NULL;
     ui->setupUi(this);
     ui->treeWidget->topLevelItem(0)->setSelected(true);
-    ui->treeWidget->topLevelItem(4)->setTextColor(0,QColor(150, 150, 150, 255));
-    ui->treeWidget->topLevelItem(5)->setTextColor(0,QColor(150, 150, 150, 255));
+    ui->treeWidget->topLevelItem(4)->setForeground(0,QColor(150, 150, 150, 255));
+    ui->treeWidget->topLevelItem(5)->setForeground(0,QColor(150, 150, 150, 255));
     ui->treeWidget->expandAll();
     ui->pluginList->expandAll();
     number_of_listener=0;
@@ -402,10 +402,12 @@ void OptionDialog::loadOption()
     newOptionValue("Ultracopier",	"ActionOnManualOpen",		OptionEngine::optionEngine->getOptionValue("Ultracopier","ActionOnManualOpen"));
     newOptionValue("Ultracopier",	"GroupWindowWhen",          OptionEngine::optionEngine->getOptionValue("Ultracopier","GroupWindowWhen"));
     newOptionValue("Ultracopier",	"confirmToGroupWindows",    OptionEngine::optionEngine->getOptionValue("Ultracopier","confirmToGroupWindows"));
-    newOptionValue("Ultracopier",	"displayOSSpecific",		OptionEngine::optionEngine->getOptionValue("Ultracopier","displayOSSpecific"));
+    newOptionValue("Ultracopier",	"displayOSSpecific2",		OptionEngine::optionEngine->getOptionValue("Ultracopier","displayOSSpecific2"));
     newOptionValue("Ultracopier",	"checkTheUpdate",           OptionEngine::optionEngine->getOptionValue("Ultracopier","checkTheUpdate"));
     newOptionValue("Ultracopier",	"remainingTimeAlgorithm",   OptionEngine::optionEngine->getOptionValue("Ultracopier","remainingTimeAlgorithm"));
     newOptionValue("Ultracopier",	"portable",                 OptionEngine::optionEngine->getOptionValue("Ultracopier","portable"));
+    newOptionValue("Ultracopier",	"soundFile",                OptionEngine::optionEngine->getOptionValue("Ultracopier","soundFile"));
+    newOptionValue("Ultracopier",	"soundWhenFinish",          OptionEngine::optionEngine->getOptionValue("Ultracopier","soundWhenFinish"));
     newOptionValue("Language",	"Language",                     OptionEngine::optionEngine->getOptionValue("Language","Language"));
     newOptionValue("Language",	"Language_force",               OptionEngine::optionEngine->getOptionValue("Language","Language_force"));
     #ifndef ULTRACOPIER_VERSION_PORTABLE
@@ -447,7 +449,7 @@ void OptionDialog::loadOption()
     allPluginsIsLoaded=true;
     on_Ultracopier_current_theme_currentIndexChanged(ui->Ultracopier_current_theme->currentIndex());
 
-    if(stringtobool(OptionEngine::optionEngine->getOptionValue("Ultracopier","displayOSSpecific")))
+    if(stringtobool(OptionEngine::optionEngine->getOptionValue("Ultracopier","displayOSSpecific2")))
     {
         if(!quit)
         {
@@ -463,7 +465,11 @@ void OptionDialog::oSSpecificClosed()
     if(oSSpecific==NULL)
         return;
     if(oSSpecific->dontShowAgain())
-        OptionEngine::optionEngine->setOptionValue("Ultracopier","displayOSSpecific","false");
+        OptionEngine::optionEngine->setOptionValue("Ultracopier","displayOSSpecific2","false");
+    if(oSSpecific->theme()=="classic")
+        OptionEngine::optionEngine->setOptionValue("Themes","Ultracopier_current_theme","Oxygen");
+    else if(oSSpecific->theme()=="supercopier")
+        OptionEngine::optionEngine->setOptionValue("Themes","Ultracopier_current_theme","Supercopier");
     delete oSSpecific;
     oSSpecific=NULL;
 }
@@ -585,10 +591,14 @@ void OptionDialog::newOptionValue(const std::string &group,const std::string &na
             ui->GroupWindowWhen->setCurrentIndex(stringtoint32(value));
         else if(name=="confirmToGroupWindows")
             ui->confirmToGroupWindows->setChecked(stringtobool(value));
-        else if(name=="displayOSSpecific")
+        else if(name=="displayOSSpecific2")
             ui->DisplayOSWarning->setChecked(stringtobool(value));
         else if(name=="checkTheUpdate")
             ui->checkTheUpdate->setChecked(stringtobool(value));
+        else if(name=="soundFile")
+            ui->soundFile->setText(QString::fromStdString(value));
+        else if(name=="soundWhenFinish")
+            ui->soundWhenFinish->setChecked(stringtobool(value));
         else if(name=="remainingTimeAlgorithm")
         {
             bool ok;
@@ -984,7 +994,7 @@ void OptionDialog::on_DisplayOSWarning_clicked()
     if(allPluginsIsLoaded)
     {
         ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"start");
-        OptionEngine::optionEngine->setOptionValue("Ultracopier","displayOSSpecific",booltostring(ui->DisplayOSWarning->isChecked()));
+        OptionEngine::optionEngine->setOptionValue("Ultracopier","displayOSSpecific2",booltostring(ui->DisplayOSWarning->isChecked()));
     }
 }
 
@@ -1035,4 +1045,22 @@ void OptionDialog::on_portable_toggled(bool)
     }
     else
         QFile::remove(settingsFilePath+"/Ultracopier.conf");
+}
+
+void OptionDialog::on_soundFile_editingFinished()
+{
+    if(allPluginsIsLoaded)
+    {
+        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"start");
+        OptionEngine::optionEngine->setOptionValue("Ultracopier","soundFile",ui->soundFile->text().toStdString());
+    }
+}
+
+void OptionDialog::on_soundWhenFinish_toggled(bool checked)
+{
+    if(allPluginsIsLoaded)
+    {
+        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"start");
+        OptionEngine::optionEngine->setOptionValue("Ultracopier","soundWhenFinish",std::to_string(checked));
+    }
 }

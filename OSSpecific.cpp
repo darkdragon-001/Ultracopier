@@ -9,6 +9,12 @@ OSSpecific::OSSpecific(QWidget *parent) :
     if(!QIcon::fromTheme(QStringLiteral("dialog-warning")).isNull())
         setWindowIcon(QIcon::fromTheme(QStringLiteral("dialog-warning")));
     updateText();
+    #if defined(ULTRACOPIER_PLUGIN_ALL_IN_ONE) || defined(ULTRACOPIER_MODE_SUPERCOPIER)
+    setMinimumWidth(0);
+    ui->widgetStyle->setVisible(false);
+    #endif
+    updateGeometry();
+    adjustSize();
 }
 
 OSSpecific::~OSSpecific()
@@ -20,7 +26,7 @@ void OSSpecific::updateText()
 {
     QString text;
     #if defined(Q_OS_LINUX)
-    text=tr("The replacement of default copy/move system is not supported by the file manager (Dolphin, Nautilus, ...).<br />Ask the developer to support it.<br />You need do the copy/move manually.");
+    text=tr("The replacement of default copy/move system is not supported by the file manager (Dolphin, Nautilus, ...).<br />Ask the developer of your file manager to support it.<br />You need do the copy/move manually.");
     #elif defined(Q_OS_WIN32)
     text=tr("Reboot the system if previously had similar software installed (like Teracopy, Supercopier or an earlier version of Ultracopier).");
     #elif defined(Q_OS_MAC)
@@ -52,7 +58,41 @@ bool OSSpecific::dontShowAgain()
     return ui->dontShowAgain->isChecked();
 }
 
+QString OSSpecific::theme()
+{
+    #if defined(ULTRACOPIER_PLUGIN_ALL_IN_ONE) || defined(ULTRACOPIER_MODE_SUPERCOPIER)
+    return "modern";
+    #else
+    switch (ui->comboBox->currentIndex()) {
+    default:
+    case 0:
+        return "classic";
+    case 1:
+        return "modern";
+    case 2:
+        return "supercopier";
+    }
+    #endif
+}
+
 void OSSpecific::on_pushButton_clicked()
 {
     close();
+}
+
+void OSSpecific::on_comboBox_currentIndexChanged(int index)
+{
+    switch(index)
+    {
+        default:
+        case 0:
+        ui->themePreview->setPixmap(QPixmap(":/ultracopier-oxygen.png"));
+        break;
+        case 1:
+        ui->themePreview->setPixmap(QPixmap(":/ultracopier-oxygen2.png"));
+        break;
+        case 2:
+        ui->themePreview->setPixmap(QPixmap(":/ultracopier-supercopier.png"));
+        break;
+    }
 }

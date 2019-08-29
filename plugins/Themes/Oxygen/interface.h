@@ -95,6 +95,8 @@ public:
     void haveExternalOrder();
     /// \brief set if is in pause
     void isInPause(const bool &);
+    /// \brief set if have pause
+    void havePause(const bool &);
     /// \brief get the widget for the copy engine
     QWidget * getOptionsEngineWidget();
     /// \brief to set if the copy engine is found
@@ -104,6 +106,8 @@ public:
 public slots:
     /// \brief set the translate
     void newLanguageLoaded();
+    /// to get by file speed
+    void doneTime(const std::vector<std::pair<uint64_t,uint32_t> > &);
 private slots:
     void on_putOnTop_clicked();
     void on_pushUp_clicked();
@@ -188,6 +192,7 @@ private:
     QModelIndexList selectedItems;
     /// \brief the custom transfer model
     TransferModel transferModel;
+    bool m_havePause;
 
     static QIcon player_play,player_pause,tempExitIcon,editDelete,skinIcon,editFind,documentOpen,documentSave,listAdd;
     static bool iconLoaded;

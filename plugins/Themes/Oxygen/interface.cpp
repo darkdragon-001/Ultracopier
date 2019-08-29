@@ -56,13 +56,31 @@ Themes::Themes(const bool &alwaysOnTop,
                const bool &minimizeToSystray,
                const bool &startMinimized,
                const bool &savePosition) :
+    duration(0),
+    durationStarted(false),
     ui(new Ui::interfaceCopy()),
-    uiOptions(new Ui::themesOptions())
+    uiOptions(new Ui::themesOptions()),
+    currentFile(0),
+    totalFile(0),
+    currentSize(0),
+    totalSize(0),
+    getOldProgression(0),
+    sysTrayIcon(NULL),
+    menu(NULL),
+    action(Ultracopier::EngineActionInProgress::Idle),
+    currentSpeed(0),
+    storeIsInPause(false),
+    modeIsForced(false),
+    type(Ultracopier::CopyType::FileAndFolder),
+    mode(Ultracopier::CopyMode::Copy),
+    haveStarted(false),
+    haveError(false)
 {
     this->facilityEngine=facilityEngine;
     ui->setupUi(this);
     uiOptions->setupUi(ui->optionsTab);
 
+    m_havePause=false;
     currentFile     = 0;
     totalFile       = 0;
     currentSize     = 0;
@@ -298,17 +316,7 @@ Themes::Themes(const bool &alwaysOnTop,
     uiOptions->alwaysOnTop->hide();
     #endif*/
     if(facilityEngine->isUltimate())
-    {
-        #ifdef SUPERCOPIER
-            ui->ad_ultimate->setText(tr("%1 is deprecated, Use %2").arg("<span style=\"color:#ee0000\">Super</span><span style=\"color:#0000cc\">Copier</span>").arg("<a href=\"http://ultracopier.first-world.info/\">Ultracopier</a>"));
-        #else
-            #ifdef Q_OS_MACOS
-                ui->ad_ultimate->setText(tr("This will be the last version for Mac, but you can compile from source"));
-            #else
-                ui->ad_ultimate->hide();
-            #endif
-        #endif
-    }
+        ui->ad_ultimate->hide();
     else
     {
         QString ultimateUrl=QString::fromStdString(facilityEngine->ultimateUrl());
@@ -316,12 +324,6 @@ Themes::Themes(const bool &alwaysOnTop,
             ui->ad_ultimate->hide();
         else
             ui->ad_ultimate->setText(
-                    #ifdef SUPERCOPIER
-                    tr("%1 is deprecated, Use %2").arg("<span style=\"color:#ee0000\">Super</span><span style=\"color:#0000cc\">copier</span>").arg("<a href=\"http://ultracopier.first-world.info/\">Ultracopier</a><br />")+
-                    #endif
-                    #ifdef Q_OS_MACOS
-                    tr("This will be the last version for Mac, but you can compile from source")+
-                    #endif
                     QStringLiteral("<a href=\"%1\">%2</a>").arg(ultimateUrl).arg(tr("Buy the Ultimate version to fund development")));
     }
 
@@ -666,6 +668,13 @@ void Themes::isInPause(const bool &isInPause)
     //resume in auto the pause
     storeIsInPause=isInPause;
     updatePause();
+}
+
+/// \brief set have pause
+void Themes::havePause(const bool &havePause)
+{
+    ui->pauseButton->setEnabled(havePause);
+    m_havePause=havePause;
 }
 
 void Themes::updatePause()
@@ -1510,3 +1519,6 @@ void Themes::on_exportErrorToTransferList_clicked()
     emit exportErrorIntoTransferList();
 }
 
+void Themes::doneTime(const std::vector<std::pair<uint64_t,uint32_t> > &)
+{
+}

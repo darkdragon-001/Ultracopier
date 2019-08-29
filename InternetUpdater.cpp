@@ -3,6 +3,7 @@
 #include "OptionEngine.h"
 #include "cpp11addition.h"
 #include "ProductKey.h"
+#include "Version.h"
 
 #ifdef ULTRACOPIER_INTERNET_SUPPORT
 
@@ -16,10 +17,11 @@ InternetUpdater::InternetUpdater(QObject *parent) :
 {
     connect(&newUpdateTimer,&QTimer::timeout,this,&InternetUpdater::downloadFile);
     connect(&firstUpdateTimer,&QTimer::timeout,this,&InternetUpdater::downloadFile);
-    newUpdateTimer.start(1000*3600);
+    newUpdateTimer.start(1000*3600*72);
     firstUpdateTimer.setSingleShot(true);
-    firstUpdateTimer.start(1000*60);
+    firstUpdateTimer.start(1000*600);
     reply=NULL;
+    qnam=new QNetworkAccessManager();
 }
 
 InternetUpdater::~InternetUpdater()
@@ -29,6 +31,7 @@ InternetUpdater::~InternetUpdater()
         delete reply;
         reply=NULL;
     }
+    delete qnam;
 }
 
 void InternetUpdater::checkUpdate()
@@ -53,9 +56,9 @@ void InternetUpdater::downloadFileInternal(const bool force)
      #endif
     std::string ultracopierVersion;
     if(ProductKey::productKey->isUltimate())
-        ultracopierVersion=name+" Ultimate/"+ULTRACOPIER_VERSION;
+        ultracopierVersion=name+" Ultimate/"+FacilityEngine::version();
     else
-        ultracopierVersion=name+"/"+ULTRACOPIER_VERSION;
+        ultracopierVersion=name+"/"+FacilityEngine::version();
     #ifdef ULTRACOPIER_VERSION_PORTABLE
         #ifdef ULTRACOPIER_PLUGIN_ALL_IN_ONE
              ultracopierVersion+=" portable/all-in-one";
@@ -74,7 +77,7 @@ void InternetUpdater::downloadFileInternal(const bool force)
     QNetworkRequest networkRequest(QStringLiteral(ULTRACOPIER_UPDATER_URL));
     networkRequest.setHeader(QNetworkRequest::UserAgentHeader,QString::fromStdString(ultracopierVersion));
     networkRequest.setRawHeader("Connection", "Close");
-    reply = qnam.get(networkRequest);
+    reply = qnam->get(networkRequest);
     connect(reply, &QNetworkReply::finished, this, &InternetUpdater::httpFinished);
 }
 
@@ -120,14 +123,14 @@ void InternetUpdater::httpFinished()
         reply=NULL;
         return;
     }
-    if(newVersion==ULTRACOPIER_VERSION)
+    if(newVersion.toStdString()==FacilityEngine::version())
     {
         reply->deleteLater();
         reply=NULL;
         emit noNewUpdate();
         return;
     }
-    if(PluginsManager::compareVersion(newVersion.toStdString(),"<=",ULTRACOPIER_VERSION))
+    if(PluginsManager::compareVersion(newVersion.toStdString(),"<=",FacilityEngine::version()))
     {
         reply->deleteLater();
         reply=NULL;
@@ -138,6 +141,9 @@ void InternetUpdater::httpFinished()
     emit newUpdate(newVersion.toStdString());
     reply->deleteLater();
     reply=NULL;
+    //regen to force close the connection
+    delete qnam;
+    qnam=new QNetworkAccessManager();
 }
 
 #endif

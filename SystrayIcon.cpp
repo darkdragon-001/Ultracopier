@@ -36,7 +36,7 @@ SystrayIcon::SystrayIcon(QObject * parent) :
     actionOptions		= new QAction(this);
     actionProductKey    = new QAction(this);
     //actionTransfer		= new QAction(this);
-    #if ! defined(Q_OS_LINUX) || (QT_VERSION < QT_VERSION_CHECK(5, 6, 0))
+    #ifdef TREEMENU
     copyMenu		= NULL;
     #endif
     //to prevent init bug
@@ -80,8 +80,10 @@ SystrayIcon::SystrayIcon(QObject * parent) :
     #ifdef ULTRACOPIER_DEBUG
     systrayMenu->addAction(actionSaveBugReport);
     #endif
+    #ifndef Q_OS_LINUX
     if(!ProductKey::productKey->isUltimate())
         systrayMenu->addAction(actionProductKey);
+    #endif
     systrayMenu->addAction(actionMenuQuit);
     #ifndef Q_OS_MAC
     systrayMenu->insertSeparator(actionOptions);
@@ -90,7 +92,7 @@ SystrayIcon::SystrayIcon(QObject * parent) :
     updateSystrayIcon();
 
     #ifdef ULTRACOPIER_INTERNET_SUPPORT
-    lastVersion=ULTRACOPIER_VERSION;
+    lastVersion=FacilityEngine::version();
     #endif
 
     timerCheckSetTooltip.setSingleShot(true);
@@ -118,7 +120,7 @@ SystrayIcon::~SystrayIcon()
     delete actionOptions;
     delete actionProductKey;
     delete systrayMenu;
-    #if ! defined(Q_OS_LINUX) || (QT_VERSION < QT_VERSION_CHECK(5, 6, 0))
+    #ifdef TREEMENU
     if(copyMenu!=NULL)
     {
         delete copyMenu;
@@ -267,8 +269,11 @@ void SystrayIcon::updateSystrayIcon()
         #endif
     }
     if(theNewSystrayIcon.isNull())
+    {
         ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Critical,"All the icon include the default icon remain null");
-    setIcon(theNewSystrayIcon);
+    }
+    else
+        setIcon(theNewSystrayIcon);
     #ifdef ULTRACOPIER_MODE_SUPERCOPIER
     setToolTip(QString::fromStdString("Supercopier - "+toolTip));
     #else
@@ -494,7 +499,7 @@ void SystrayIcon::addEngineAction(const QString &name, const QIcon &icon, const 
     QAction *copy = new QAction(icon, label, menu);
     connect(copy,&QAction::triggered, this, query);
     copy->setData(name);
-    #if ! defined(Q_OS_LINUX) || (QT_VERSION < QT_VERSION_CHECK(5, 6, 0))
+    #ifdef TREEMENU
     copyMenu->addAction(copy);
     #else
     actions.push_back(copy);
@@ -505,7 +510,7 @@ void SystrayIcon::addEngineAction(const QString &name, const QIcon &icon, const 
 void SystrayIcon::reloadEngineList()
 {
     ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"start");
-    #if ! defined(Q_OS_LINUX) || (QT_VERSION < QT_VERSION_CHECK(5, 6, 0))
+    #ifdef TREEMENU
     if(copyMenu!=NULL)
     {
         delete copyMenu;
@@ -542,7 +547,7 @@ void SystrayIcon::reloadEngineList()
         QString labelTransfer = tr("Add &transfer");
         QString labelMove     = tr("Add &move");
         QMenu *menu = nullptr;
-        #if ! defined(Q_OS_LINUX) || (QT_VERSION < QT_VERSION_CHECK(5, 6, 0))
+        #ifdef TREEMENU
         if(engineEntryList.size()==1)
             menu = copyMenu;
         else
@@ -560,7 +565,7 @@ void SystrayIcon::reloadEngineList()
             addEngineAction(name, IconAdd, labelTransfer, menu, &SystrayIcon::CatchTransferQuery);
             addEngineAction(name, IconAdd, labelMove, menu, &SystrayIcon::CatchMoveQuery);
         }
-        #if ! defined(Q_OS_LINUX) || (QT_VERSION < QT_VERSION_CHECK(5, 6, 0))
+        #ifdef TREEMENU
         if(engineEntryList.size()!=1)
             copyMenu->addMenu(menu);
         #endif

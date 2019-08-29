@@ -5,11 +5,15 @@
 
 #include <QApplication>
 #include <QtPlugin>
-#include "../Variable.h"
-#include "../plugins/CopyEngine/Ultracopier/CopyEngineFactory.h"
-#include "../plugins/Themes/Oxygen/ThemesFactory.h"
+#ifndef ULTRACOPIER_LITTLE_RANDOM
+#include "../plugins/CopyEngine/Ultracopier-Spec/CopyEngineFactory.h"
+#else
+#include "../plugins/CopyEngine/Random/CopyEngineFactory.h"
+#endif
+#include "../plugins/Themes/Oxygen2/ThemesFactory.h"
 #include "OptionsEngineLittle.h"
 #include "../FacilityEngine.h"
+#include "../Version.h"
 #include <iostream>
 
 Themes * interface=NULL;
@@ -41,6 +45,8 @@ void connectEngine();
 void connectInterfaceAndSync();
 void periodicSynchronization();
 
+bool havePause=false;
+
 /// \brief Define the main() for the point entry
 int main(int argc, char *argv[])
 {
@@ -49,6 +55,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<Ultracopier::CopyMode>("Ultracopier::CopyMode");
     qRegisterMetaType<Ultracopier::ItemOfCopyList>("Ultracopier::ItemOfCopyList");
     qRegisterMetaType<std::string>("std::string");
+    qRegisterMetaType<std::wstring>("std::wstring");
     qRegisterMetaType<std::vector<std::string> >("std::vector<std::string>");
     qRegisterMetaType<Ultracopier::DebugLevel>("Ultracopier::DebugLevel");
     qRegisterMetaType<Ultracopier::EngineActionInProgress>("Ultracopier::EngineActionInProgress");
@@ -64,6 +71,7 @@ int main(int argc, char *argv[])
 
     interface=static_cast<Themes *>(themesFactory.getInstance());
     engine=static_cast<CopyEngine *>(copyEngineFactory.getInstance());
+    havePause=copyEngineFactory.havePause();
 
     connectEngine();
     connectInterfaceAndSync();
@@ -119,12 +127,12 @@ void connectInterfaceAndSync()
     failed|=!QObject::connect(interface,&Themes::resume,                     engine,&CopyEngine::resetSpeedDetectedInterface);
     failed|=!QObject::connect(interface,&Themes::urlDropped,                 engine,&CopyEngine::urlDropped,Qt::QueuedConnection);*/
     failed|=!QObject::connect(interface,&Themes::cancel,                     engine,&CopyEngine::cancel,Qt::QueuedConnection);
-    failed|=!QObject::connect(engine,&CopyEngine::newActionOnList,           engine,&CopyEngine::newActionOnList,	Qt::QueuedConnection);
 
+    failed|=!QObject::connect(engine,&CopyEngine::newActionOnList,           interface,&Themes::getActionOnList,	Qt::QueuedConnection);
     failed|=!QObject::connect(engine,&CopyEngine::pushFileProgression,		interface,&Themes::setFileProgression,		Qt::QueuedConnection);
     failed|=!QObject::connect(engine,&CopyEngine::pushGeneralProgression,	interface,&Themes::setGeneralProgression,		Qt::QueuedConnection);
-    failed|=!QObject::connect(engine,&CopyEngine::pushGeneralProgression,    engine,&CopyEngine::pushGeneralProgression,		Qt::QueuedConnection);
     failed|=!QObject::connect(engine,&CopyEngine::errorToRetry,              interface,&Themes::errorToRetry,		Qt::QueuedConnection);
+    failed|=!QObject::connect(engine,&CopyEngine::doneTime,                 interface,&Themes::doneTime,		Qt::QueuedConnection);
 
     if(failed)
     {
@@ -133,6 +141,7 @@ void connectInterfaceAndSync()
     }
     interface->setSupportSpeedLimitation(engine->supportSpeedLimitation());
     interface->setCopyType(Ultracopier::CopyType::FileAndFolder);
+    interface->havePause(havePause);
     interface->setTransferListOperation(Ultracopier::TransferListOperation::TransferListOperation_None);
     interface->actionInProgess(Ultracopier::EngineActionInProgress::Idle);
     //interface->isInPause(currentCopyInstance.isPaused);

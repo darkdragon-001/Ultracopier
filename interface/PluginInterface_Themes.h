@@ -47,6 +47,8 @@ class PluginInterface_Themes : public QWidget
         virtual void setGeneralProgression(const uint64_t &current,const uint64_t &total) = 0;
         /// \brief show the file progression
         virtual void setFileProgression(const std::vector<Ultracopier::ProgressionItem> &progressionList) = 0;
+        /// to get by file speed, size and ms
+        virtual void doneTime(const std::vector<std::pair<uint64_t,uint32_t> > &timeList) = 0;
     public:
         /// \brief get the widget for the copy engine
         virtual QWidget * getOptionsEngineWidget() = 0;
@@ -63,6 +65,8 @@ class PluginInterface_Themes : public QWidget
         virtual void haveExternalOrder() = 0;
         /// \brief set if is in pause
         virtual void isInPause(const bool &isInPause) = 0;
+        /// \brief set if is in pause
+        virtual void havePause(const bool &havePause) = 0;
     // signal to implement
     signals:
         //set the transfer list
@@ -111,7 +115,7 @@ class PluginInterface_ThemesFactory : public QObject
 };
 
 #ifndef ULTRACOPIER_PLUGIN_ALL_IN_ONE
-Q_DECLARE_INTERFACE(PluginInterface_ThemesFactory,"first-world.info.ultracopier.PluginInterface.ThemesFactory/1.2.4.0");
+Q_DECLARE_INTERFACE(PluginInterface_ThemesFactory,"first-world.info.ultracopier.PluginInterface.ThemesFactory/2.0.0.0");
 #endif
 
 #endif // PLUGININTERFACE_THEMES_H

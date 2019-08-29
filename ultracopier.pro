@@ -23,10 +23,10 @@ DEFINES += ULTRACOPIER_PLUGIN_ALL_IN_ONE
 include(other-pro/ultracopier-core.pro)
 
 RESOURCES += $$PWD/plugins/static-plugins.qrc \
-    $$PWD/plugins/CopyEngine/Ultracopier/copyEngineResources.qrc \
-    $$PWD/plugins/Themes/Oxygen/interfaceResources_unix.qrc \
-    $$PWD/plugins/Themes/Oxygen/interfaceResources_windows.qrc \
-    $$PWD/plugins/Themes/Oxygen/interfaceResources.qrc
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/copyEngineResources.qrc \
+    $$PWD/plugins/Themes/Oxygen2/interfaceResources_unix.qrc \
+    $$PWD/plugins/Themes/Oxygen2/interfaceResources_windows.qrc \
+    $$PWD/plugins/Themes/Oxygen2/interfaceResources.qrc
 
 win32:RESOURCES += $$PWD/plugins/static-plugins-windows.qrc
 
@@ -51,47 +51,44 @@ DEFINES += ULTRACOPIER_PLUGIN_ALL_IN_ONE
 DEFINES += ULTRACOPIER_PLUGIN_ALL_IN_ONE_DIRECT
 
 FORMS += \
-    $$PWD/plugins/CopyEngine/Ultracopier/copyEngineOptions.ui \
-    $$PWD/plugins/CopyEngine/Ultracopier/debugDialog.ui \
-    $$PWD/plugins/CopyEngine/Ultracopier/DiskSpace.ui \
-    $$PWD/plugins/CopyEngine/Ultracopier/fileErrorDialog.ui \
-    $$PWD/plugins/CopyEngine/Ultracopier/fileExistsDialog.ui \
-    $$PWD/plugins/CopyEngine/Ultracopier/fileIsSameDialog.ui \
-    $$PWD/plugins/CopyEngine/Ultracopier/FilterRules.ui \
-    $$PWD/plugins/CopyEngine/Ultracopier/Filters.ui \
-    $$PWD/plugins/CopyEngine/Ultracopier/folderExistsDialog.ui \
-    $$PWD/plugins/CopyEngine/Ultracopier/RenamingRules.ui \
-    $$PWD/plugins/Themes/Oxygen/themesOptions.ui \
-    $$PWD/plugins/Themes/Oxygen/options.ui \
-    $$PWD/plugins/Themes/Oxygen/interface.ui
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/copyEngineOptions.ui \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/debugDialog.ui \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/DiskSpace.ui \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/fileErrorDialog.ui \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/fileExistsDialog.ui \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/fileIsSameDialog.ui \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/FilterRules.ui \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/Filters.ui \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/folderExistsDialog.ui \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/RenamingRules.ui \
+    $$PWD/plugins/Themes/Oxygen2/themesOptions.ui \
+    $$PWD/plugins/Themes/Oxygen2/options.ui \
+    $$PWD/plugins/Themes/Oxygen2/interface.ui
 
 HEADERS += \
-    $$PWD/plugins/CopyEngine/Ultracopier/AvancedQFile.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/CompilerInfo.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/CopyEngine.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/DebugDialog.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/DebugEngineMacro.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/DiskSpace.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/DriveManagement.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/Environment.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/CopyEngineFactory.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/FileErrorDialog.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/FileExistsDialog.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/FileIsSameDialog.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/FilterRules.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/Filters.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/FolderExistsDialog.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/MkPath.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/ListThread.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/ReadThread.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/RenamingRules.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/ScanFileOrFolder.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/StructEnumDefinition_CopyEngine.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/StructEnumDefinition.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/TransferThread.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/Variable.h \
-    $$PWD/plugins/CopyEngine/Ultracopier/WriteThread.h \
-    $$PWD/plugins/Listener/catchcopy-v0002/Variable.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/CompilerInfo.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/CopyEngine.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/DebugDialog.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/DebugEngineMacro.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/DiskSpace.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/DriveManagement.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/Environment.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/CopyEngineFactory.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/FileErrorDialog.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/FileExistsDialog.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/FileIsSameDialog.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/FilterRules.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/Filters.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/FolderExistsDialog.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/MkPath.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/ListThread.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/RenamingRules.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/ScanFileOrFolder.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/StructEnumDefinition_CopyEngine.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/StructEnumDefinition.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/TransferThread.h \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/CopyEngineUltracopier-SpecVariable.h \
+    $$PWD/plugins/Listener/catchcopy-v0002/Listenercatchcopy-v0002Variable.h \
     $$PWD/plugins/Listener/catchcopy-v0002/StructEnumDefinition.h \
     $$PWD/plugins/Listener/catchcopy-v0002/listener.h \
     $$PWD/plugins/Listener/catchcopy-v0002/Environment.h \
@@ -100,43 +97,64 @@ HEADERS += \
     $$PWD/plugins/Listener/catchcopy-v0002/catchcopy-api-0002/ExtraSocketCatchcopy.h \
     $$PWD/plugins/Listener/catchcopy-v0002/catchcopy-api-0002/ServerCatchcopy.h \
     $$PWD/plugins/Listener/catchcopy-v0002/catchcopy-api-0002/VariablesCatchcopy.h \
-    $$PWD/plugins/Themes/Oxygen/DebugEngineMacro.h \
-    $$PWD/plugins/Themes/Oxygen/Environment.h \
-    $$PWD/plugins/Themes/Oxygen/ThemesFactory.h \
-    $$PWD/plugins/Themes/Oxygen/interface.h \
-    $$PWD/plugins/Themes/Oxygen/Variable.h \
-    $$PWD/plugins/Themes/Oxygen/TransferModel.h \
-    $$PWD/plugins/Themes/Oxygen/StructEnumDefinition.h
+    $$PWD/plugins/Themes/Oxygen2/DebugEngineMacro.h \
+    $$PWD/plugins/Themes/Oxygen2/Oxygen2Environment.h \
+    $$PWD/plugins/Themes/Oxygen2/ThemesFactory.h \
+    $$PWD/plugins/Themes/Oxygen2/interface.h \
+    $$PWD/plugins/Themes/Oxygen2/Oxygen2Variable.h \
+    $$PWD/plugins/Themes/Oxygen2/TransferModel.h \
+    $$PWD/plugins/Themes/Oxygen2/StructEnumDefinition.h \
+    $$PWD/plugins/Themes/Oxygen2/chartarea.h \
+    $$PWD/plugins/Themes/Oxygen2/fileTree.h \
+    $$PWD/plugins/Themes/Oxygen2/ProgressBarDark.h \
+    $$PWD/plugins/Themes/Oxygen2/DarkButton.h \
+    $$PWD/plugins/Themes/Oxygen2/VerticalLabel.h \
+    $$PWD/plugins/Themes/Oxygen2/radialMap/map.h \
+    $$PWD/plugins/Themes/Oxygen2/radialMap/widget.h \
+    $$PWD/plugins/Themes/Oxygen2/radialMap/radialMap.h
 
 SOURCES += \
-    $$PWD/plugins/CopyEngine/Ultracopier/AvancedQFile.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/CopyEngine-collision-and-error.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/CopyEngine.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/DebugDialog.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/DiskSpace.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/DriveManagement.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/CopyEngineFactory.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/FileErrorDialog.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/FileExistsDialog.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/FileIsSameDialog.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/FilterRules.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/Filters.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/FolderExistsDialog.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/ListThread_InodeAction.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/MkPath.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/ReadThread.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/RenamingRules.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/ScanFileOrFolder.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/TransferThread.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/WriteThread.cpp \
-    $$PWD/plugins/CopyEngine/Ultracopier/ListThread.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/CopyEngine-collision-and-error.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/CopyEngine.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/DebugDialog.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/DiskSpace.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/DriveManagement.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/CopyEngineFactory.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/FileErrorDialog.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/FileExistsDialog.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/FileIsSameDialog.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/FilterRules.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/Filters.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/FolderExistsDialog.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/ListThread_InodeAction.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/MkPath.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/RenamingRules.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/ScanFileOrFolder.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/TransferThread.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/ListThread.cpp \
     $$PWD/plugins/Listener/catchcopy-v0002/listener.cpp \
     $$PWD/plugins/Listener/catchcopy-v0002/catchcopy-api-0002/ClientCatchcopy.cpp \
     $$PWD/plugins/Listener/catchcopy-v0002/catchcopy-api-0002/ExtraSocketCatchcopy.cpp \
     $$PWD/plugins/Listener/catchcopy-v0002/catchcopy-api-0002/ServerCatchcopy.cpp \
-    $$PWD/plugins/Themes/Oxygen/ThemesFactory.cpp \
-    $$PWD/plugins/Themes/Oxygen/interface.cpp \
-    $$PWD/plugins/Themes/Oxygen/TransferModel.cpp
+    $$PWD/plugins/Themes/Oxygen2/ThemesFactory.cpp \
+    $$PWD/plugins/Themes/Oxygen2/interface.cpp \
+    $$PWD/plugins/Themes/Oxygen2/TransferModel.cpp \
+    $$PWD/plugins/Themes/Oxygen2/chartarea.cpp \
+    $$PWD/plugins/Themes/Oxygen2/fileTree.cpp \
+    $$PWD/plugins/Themes/Oxygen2/ProgressBarDark.cpp \
+    $$PWD/plugins/Themes/Oxygen2/DarkButton.cpp \
+    $$PWD/plugins/Themes/Oxygen2/VerticalLabel.cpp \
+    $$PWD/plugins/Themes/Oxygen2/radialMap/labels.cpp \
+    $$PWD/plugins/Themes/Oxygen2/radialMap/map.cpp \
+    $$PWD/plugins/Themes/Oxygen2/radialMap/widgetEvents.cpp \
+    $$PWD/plugins/Themes/Oxygen2/radialMap/widget.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/ListThreadListChange.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/ListThreadActions.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/ListThreadMedia.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/ListThreadNew.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/ListThreadOptions.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/ListThreadScan.cpp \
+    $$PWD/plugins/CopyEngine/Ultracopier-Spec/ListThreadStat.cpp
 
 win32 {
     RESOURCES -= $$PWD/resources/resources-windows-qt-plugin.qrc
@@ -146,7 +164,7 @@ win32 {
         $$PWD/plugins/PluginLoader/catchcopy-v0002/pluginLoader.h \
         $$PWD/plugins/PluginLoader/catchcopy-v0002/DebugEngineMacro.h \
         $$PWD/plugins/PluginLoader/catchcopy-v0002/Environment.h \
-        $$PWD/plugins/PluginLoader/catchcopy-v0002/Variable.h \
+        $$PWD/plugins/PluginLoader/catchcopy-v0002/PluginLoadercatchcopy-v0002Variable.h \
         $$PWD/plugins/PluginLoader/catchcopy-v0002/PlatformMacro.h \
         $$PWD/plugins/PluginLoader/catchcopy-v0002/OptionsWidget.h
     SOURCES         += \
@@ -154,4 +172,9 @@ win32 {
         $$PWD/plugins/PluginLoader/catchcopy-v0002/OptionsWidget.cpp
     FORMS += $$PWD/plugins/PluginLoader/catchcopy-v0002/OptionsWidget.ui
     LIBS += -lole32 -lshell32
+    QT += winextras
 }
+
+#temp
+HEADERS += $$PWD/plugins/CopyEngine/Ultracopier-Spec/async/TransferThreadAsync.h
+SOURCES += $$PWD/plugins/CopyEngine/Ultracopier-Spec/async/TransferThreadAsync.cpp

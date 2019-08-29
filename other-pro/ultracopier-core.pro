@@ -2,6 +2,34 @@ CONFIG += c++11
 QMAKE_CXXFLAGS+="-std=c++0x -Wall -Wextra"
 mac:QMAKE_CXXFLAGS+="-stdlib=libc++"
 #QMAKE_CXXFLAGS+="-Wall -Wextra -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-unused-macros -Wno-newline-eof -Wno-exit-time-destructors -Wno-global-constructors -Wno-gnu-zero-variadic-macro-arguments -Wno-documentation -Wno-shadow -Wno-missing-prototypes -Wno-padded -Wno-covered-switch-default -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-switch-enum -Wno-undefined-reinterpret-cast -Wno-unreachable-code-break -Wno-sign-conversion -Wno-float-conversion"
+QMAKE_CXXFLAGS+=""
+DEFINES += _LARGE_FILE_SOURCE=1 _FILE_OFFSET_BITS=64 _UNICODE UNICODE
+
+wasm: DEFINES += NOAUDIO
+macx {
+    DEFINES += NOAUDIO
+    LIBS += /usr/local/Cellar/opus/1.3.1/lib/libopus.a
+    INCLUDEPATH += /usr/local/Cellar/opus/1.3.1/include/
+}
+#DEFINES += NOAUDIO
+!contains(DEFINES, NOAUDIO) {
+QT += multimedia
+linux:LIBS += -lopus
+win32:LIBS += -lopus
+SOURCES += \
+    $$PWD/../libogg/bitwise.c \
+    $$PWD/../libogg/framing.c \
+    $$PWD/../opusfile/info.c \
+    $$PWD/../opusfile/internal.c \
+    $$PWD/../opusfile/opusfile.c \
+    $$PWD/../opusfile/stream.c \
+
+HEADERS  += \
+    $$PWD/../libogg/ogg.h \
+    $$PWD/../libogg/os_types.h \
+    $$PWD/../opusfile/internal.h \
+    $$PWD/../opusfile/opusfile.h \
+}
 
 TEMPLATE = app
 QT += network xml widgets
@@ -31,6 +59,7 @@ TARGET = ultracopier
 macx {
     ICON = $$PWD/../resources/ultracopier.icns
     #QT += macextras
+    VERSION = 2.0.0.1
 }
 FORMS += $$PWD/../HelpDialog.ui \
     $$PWD/../PluginInformation.ui \
@@ -42,7 +71,9 @@ RESOURCES += \
     $$PWD/../resources/ultracopier-resources_unix.qrc \
     $$PWD/../resources/ultracopier-resources_windows.qrc
 win32 {
-    RESOURCES += $$PWD/../resources/resources-windows-qt-plugin.qrc
+    !contains(DEFINES, ULTRACOPIER_PLUGIN_ALL_IN_ONE) {
+        RESOURCES += $$PWD/../resources/resources-windows-qt-plugin.qrc
+    }
     RC_FILE += $$PWD/../resources/resources-windows.rc
     #LIBS += -lpdh
         LIBS += -ladvapi32
@@ -77,6 +108,7 @@ HEADERS += $$PWD/../ResourcesManager.h \
     $$PWD/../interface/PluginInterface_CopyEngine.h \
     $$PWD/../interface/OptionInterface.h \
     $$PWD/../Variable.h \
+    $$PWD/../Version.h \
     $$PWD/../PluginLoaderCore.h \
     $$PWD/../interface/PluginInterface_PluginLoader.h \
     $$PWD/../OptionDialog.h \
@@ -121,6 +153,7 @@ SOURCES += $$PWD/../ThemesManager.cpp \
     $$PWD/../LocalListener.cpp \
     $$PWD/../CliParser.cpp \
     $$PWD/../FacilityEngine.cpp \
+    $$PWD/../FacilityEngineVersion.cpp \
     $$PWD/../LogThread.cpp \
     $$PWD/../OSSpecific.cpp \
     $$PWD/../cpp11addition.cpp \
@@ -132,3 +165,9 @@ INCLUDEPATH += \
     $$PWD/../lib/qt-tar-xz/
 
 OTHER_FILES += $$PWD/../resources/resources-windows.rc
+
+win32: {
+DEFINES += WIDESTRING
+QT += winextras
+}
+DEFINES += WIDESTRING
